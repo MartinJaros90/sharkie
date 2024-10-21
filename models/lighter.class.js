@@ -1,19 +1,19 @@
 class Light extends MovableObject{
     y = 0;
-    width = 400;
+    width = 2400;
     height = 350;
 
 
     constructor() {
-        super().loadImage('img/3. Background/Layers/1. Light/1.png');
+        super().loadImage('img/3. Background/Layers/1. Light/completo.png');
         
         this.x = Math.random() * 500;
-        this.animate();
+        // this.animate();
     }
 
 
-    animate() {
-        this.moveLeft();
-    }
+    // animate() {
+    //     this.moveLeft();
+    // }
 
 }
