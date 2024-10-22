@@ -32,56 +32,118 @@ class Character extends MovableObject {
         'img/1.Sharkie/1.IDLE/17.png',
         'img/1.Sharkie/1.IDLE/18.png'
     ];
+    IMAGES_LONG_IDLE = [
+        'img/1.Sharkie/2.Long_IDLE/i1.png',
+        'img/1.Sharkie/2.Long_IDLE/I2.png',
+        'img/1.Sharkie/2.Long_IDLE/I3.png',
+        'img/1.Sharkie/2.Long_IDLE/I4.png',
+        'img/1.Sharkie/2.Long_IDLE/I5.png',
+        'img/1.Sharkie/2.Long_IDLE/I6.png',
+        'img/1.Sharkie/2.Long_IDLE/I7.png',
+        'img/1.Sharkie/2.Long_IDLE/I8.png',
+        'img/1.Sharkie/2.Long_IDLE/I9.png',
+        'img/1.Sharkie/2.Long_IDLE/I10.png',
+        'img/1.Sharkie/2.Long_IDLE/I11.png',
+        'img/1.Sharkie/2.Long_IDLE/I12.png',
+        'img/1.Sharkie/2.Long_IDLE/I13.png',
+        'img/1.Sharkie/2.Long_IDLE/I14.png'
+    ];
     world;
     swimming_sound = new Audio('audio/swimm.mp3');
+    idleInterval = null;
+    longIdleTimeout = null;
 
     constructor() {
         super().loadImage('img/1.Sharkie/3.Swim/1.png');
         this.loadImages(this.IMAGES_SWIMM);
+        this.loadImages(this.IMAGES_IDLE);
+        this.loadImages(this.IMAGES_LONG_IDLE);
 
         this.animate();
     }
 
+    playLongIdleAnimation() {
+        clearInterval(this.idleInterval);
+        clearInterval(this.longIdleInterval);
+
+        this.longIdleInterval = setInterval(() => {
+            this.playAnimation(this.IMAGES_LONG_IDLE);
+        }, 500);
+    }
 
     animate() {
-
         setInterval(() => {
             this.swimming_sound.pause();
+            let isMoving = false;
+
             if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
                 this.x += this.speed;
                 this.otherDirection = false;
                 this.swimming_sound.play();
+                isMoving = true;
             }
 
             if (this.world.keyboard.LEFT && this.x > -670) {
                 this.x -= this.speed;
                 this.otherDirection = true;
                 this.swimming_sound.play();
+                isMoving = true;
             }
-            this.world.camera_x = -this.x +50;
+
+            this.world.camera_x = -this.x + 50;
 
             if (this.world.keyboard.UP) {
                 this.y -= this.speed;
                 this.swimming_sound.play();
+                isMoving = true;
             }
 
             if (this.world.keyboard.DOWN) {
                 this.y += this.speed;
                 this.swimming_sound.play();
+                isMoving = true;
+            }
+
+            this.world.camera_x = -this.x + 50;
+
+            if (isMoving) {
+                clearInterval(this.idleInterval);
+                clearInterval(this.longIdleInterval);
+                clearTimeout(this.longIdleTimeout);
+                this.idleInterval = null;
+                this.longIdleInterval = null;
+                this.longIdleTimeout = null;
+            } else {
+                if (!this.idleInterval) {
+                    this.startIdleAnimation();
+                }
+
+                if (!this.longIdleTimeout) {
+                    this.startLongIdleTimer();
+                }
             }
         }, 1000 / 60);
 
         setInterval(() => {
-
             if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.world.keyboard.UP || this.world.keyboard.DOWN) {
-
-                //Swimm animation
                 this.playAnimation(this.IMAGES_SWIMM);
             }
         }, 50);
     }
 
-    jump() {
-        
+    startIdleAnimation() {
+        this.idleInterval = setInterval(() => {
+            this.playIdleAnimation();
+        }, 100);
+    }
+
+    startLongIdleTimer() {
+        this.longIdleTimeout = setTimeout(() => {
+            this.playLongIdleAnimation();
+        }, 5000);
+    }
+
+    playIdleAnimation() {
+        this.playAnimation(this.IMAGES_IDLE);
     }
 }
