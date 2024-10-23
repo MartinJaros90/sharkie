@@ -6,6 +6,8 @@ class World {
     ctx;
     keyboard;
     camera_x = 0;
+    background_sound = new Audio('audio/sound.mp3');
+    
 
 
     constructor(canvas, keyboard) {
@@ -14,11 +16,19 @@ class World {
         this.keyboard = keyboard;
         this.draw();
         this.setWorld();
+        this.playBackgroundMusic();
     }
 
 
     setWorld() {
         this.character.world = this;
+    }
+
+
+    playBackgroundMusic() {
+        this.background_sound.loop = true; // Wiederholt die Musik in einer Schleife
+        this.background_sound.volume = 0.5; // Optional: Lautstärke anpassen (z.B. 50%)
+        this.background_sound.play(); // Musik abspielen
     }
 
 

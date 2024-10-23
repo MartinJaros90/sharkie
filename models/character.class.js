@@ -77,14 +77,14 @@ class Character extends MovableObject {
             let isMoving = false;
 
             if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
-                this.x += this.speed;
+                this.moveRight();
                 this.otherDirection = false;
                 this.swimming_sound.play();
                 isMoving = true;
             }
 
             if (this.world.keyboard.LEFT && this.x > -670) {
-                this.x -= this.speed;
+                this.moveLeft();
                 this.otherDirection = true;
                 this.swimming_sound.play();
                 isMoving = true;
@@ -93,13 +93,13 @@ class Character extends MovableObject {
             this.world.camera_x = -this.x + 50;
 
             if (this.world.keyboard.UP) {
-                this.y -= this.speed;
+                this.moveUp();
                 this.swimming_sound.play();
                 isMoving = true;
             }
 
             if (this.world.keyboard.DOWN) {
-                this.y += this.speed;
+                this.moveDown();
                 this.swimming_sound.play();
                 isMoving = true;
             }
