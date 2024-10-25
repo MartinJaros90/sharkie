@@ -6,6 +6,7 @@ class World {
     ctx;
     keyboard;
     camera_x = 0;
+    statusBar = new StatusBar();
     background_sound = new Audio('audio/sound.mp3');
     
 
@@ -30,7 +31,7 @@ class World {
             this.level.enemies.forEach((enemy) => { 
                if (this.character.isColliding(enemy)) {
                    this.character.hit();
-                   console.log('Collision with Character', this.character.energy);
+                   this.statusBar.setPercentage(this.character.energy);
                } 
             });
         }, 200);
@@ -48,8 +49,16 @@ class World {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.translate(this.camera_x, 0);
-
         this.addObjectsToMap(this.level.backgroundObjects);
+
+
+        this.ctx.translate(-this.camera_x, 0);
+        // ----- Space for fixed  objects -----//
+        this.addToMap(this.statusBar);
+        this.ctx.translate(this.camera_x, 0);
+
+
+
         this.addToMap(this.character);
         this.addObjectsToMap(this.level.enemies);
         this.addObjectsToMap(this.level.light);
