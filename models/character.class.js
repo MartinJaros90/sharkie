@@ -1,8 +1,8 @@
 class Character extends MovableObject {
     x = 80;
     y = 120;
-    height = 200;
-    width = 240;
+    height = 240;
+    width = 280;
     speed = 5;
     IMAGES_SWIMM = [
         'img/1.Sharkie/3.Swim/1.png',

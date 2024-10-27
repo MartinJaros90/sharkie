@@ -7,6 +7,8 @@ class World {
     keyboard;
     camera_x = 0;
     statusBar = new StatusBar();
+    coinBar = new CoinBar();
+    poisonBar = new PoisonBar();
     background_sound = new Audio('audio/sound.mp3');
     
 
@@ -55,8 +57,9 @@ class World {
         this.ctx.translate(-this.camera_x, 0);
         // ----- Space for fixed  objects -----//
         this.addToMap(this.statusBar);
+        this.addToMap(this.coinBar);
+        this.addToMap(this.poisonBar);
         this.ctx.translate(this.camera_x, 0);
-
 
 
         this.addToMap(this.character);
