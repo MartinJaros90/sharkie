@@ -3,8 +3,25 @@ class MovableObject extends DrawableObject{
     otherDirection = false;
     energy = 100;
     lastHit = 0;
+    acceleration = 2.5;
 
+    applyGravity() {
+        setInterval(() => {
+            if (this.isAboveGround() || this.speedY > 0) {
+                this.y -= this.speedY;
+                this.speedY -= this.acceleration;
+            }
+        }, 1000/25);
+    }
 
+    isAboveGround() {
+        if (this instanceof ThrowableObject) { //Throwable Object should always fall
+            return true;
+        } else {
+            return this.y < 180;
+        }
+        
+    }
 
     playAnimation(images){
         let i = this.currentImage % images.length;

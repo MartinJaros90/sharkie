@@ -19,15 +19,9 @@ class CoinBar extends StatusBar{
         this.setPercentage(0);
     }
 
-
-   /**
-    * This function handles the case when a coin is collected and increments the coin percentage.
-    */
     coinCollected(){
-        if (this.percentageCoins < 100) {
-        this.percentageCoins += 20; 
+        this.percentageCoins += 20;
         this.setPercentage(this.percentageCoins);
-    }
     }
 
 }

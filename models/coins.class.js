@@ -10,6 +10,7 @@ class Coin extends MovableObject {
         'img/4. Marcadores/1. Coins/4.png'
     ];
 
+
     constructor() {
         super().loadImage(this.IMAGES_SWIMM[0]);
         this.loadImages(this.IMAGES_SWIMM);

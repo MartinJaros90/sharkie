@@ -9,6 +9,7 @@ class World {
     statusBar = new StatusBar();
     coinBar = new CoinBar();
     poisonBar = new PoisonBar();
+    throwableObject = [];
     background_sound = new Audio('audio/sound.mp3');
     
 
@@ -20,7 +21,7 @@ class World {
         this.draw();
         this.setWorld();
         // this.playBackgroundMusic();
-        this.checkCollisions();
+        this.run();
     }
 
 
@@ -28,15 +29,38 @@ class World {
         this.character.world = this;
     }
 
-    checkCollisions() {
+    run() {
         setInterval(() => {
+
+            this.checkCollisions();
+            this.checkThrowObjects();
+        }, 200);
+    }
+
+    checkThrowObjects() {
+        if (this.keyboard.D) {
+            let bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100)
+            this.throwableObject.push(bottle);
+        }
+    }
+
+    checkCollisions() {
             this.level.enemies.forEach((enemy) => { 
                if (this.character.isColliding(enemy)) {
                    this.character.hit();
                    this.statusBar.setPercentage(this.character.energy);
                } 
             });
-        }, 200);
+    }
+
+    checkCharacterCoinCollision(){
+        this.level.coins.forEach((coin) => {
+            if(!coin.isCollected && this.character.isCharacterColliding(coin)){
+                coin.collect();
+                this.coinBar.coinCollected();
+                coin.isCollected = true;
+            }
+        })
     }
 
 
@@ -65,6 +89,7 @@ class World {
         this.addToMap(this.character);
         this.addObjectsToMap(this.level.enemies);
         this.addObjectsToMap(this.level.light);
+        this.addObjectsToMap(this.throwableObject);
 
         this.ctx.translate(-this.camera_x, 0);
 
