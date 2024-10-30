@@ -3,7 +3,6 @@ const level1 = new Level(
     [
         new EnemyFish(),
         new EnemyFish(),
-        new EnemyFish(),
         new EnemyPink(),
         new EnemyPink(),
         new EnemyJelly(),
@@ -26,13 +25,6 @@ const level1 = new Level(
         new Posion(),
         new Posion(),
         
-        new Coin(),
-        new Coin(),
-        new Coin(),
-        new Coin(),
-        new Coin(),
-        new Coin(),
-        new Coin(),
         new Coin(),
         new Coin(),
         new Coin(),

@@ -36,6 +36,7 @@ window.addEventListener("keydown", (e) => {
      if (e.keyCode == 68) {
         keyboard.D  = true;
     }
+    
 });
 
 

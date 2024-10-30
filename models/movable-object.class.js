@@ -4,6 +4,7 @@ class MovableObject extends DrawableObject{
     energy = 100;
     lastHit = 0;
     acceleration = 2.5;
+    isHurtPlaying = false;
 
     applyGravity() {
         setInterval(() => {
@@ -31,12 +32,28 @@ class MovableObject extends DrawableObject{
     }
 
 
-    isColliding (mo) {
-        return this.x + this.width > mo.x &&
-            this.y + this.height > mo.y &&
-            this.x < mo.x &&
-            this.y < mo.y + mo.height;
+isColliding(mo) {
+    let offsetX = 40; 
+    let offsetY = 40; 
+    let offsetTop = 120; 
+
+    let reducedWidth = this.width - 2 * offsetX; 
+    let reducedHeight = this.height - offsetY - offsetTop; 
+
+    let collides = (this.x + offsetX + reducedWidth > mo.x &&
+                    this.y + offsetTop + reducedHeight > mo.y &&
+                    this.x + offsetX < mo.x + mo.width &&
+                    this.y + offsetTop < mo.y + mo.height);
+
+    if (collides) {
+        if (mo instanceof EnemyFish || mo instanceof EnemyPink || mo instanceof EnemyJelly || mo instanceof EnemyBubble || mo instanceof Endboss) {
+        }
+        return true;
     }
+    return false;
+}
+
+
 
     hit() {
         this.energy -= 5;
@@ -46,6 +63,22 @@ class MovableObject extends DrawableObject{
             this.lastHit = new Date().getTime();
         }
     }
+
+playHurtAnimation() {
+    this.isHurtPlaying = true; 
+
+    let i = 0;
+    let interval = setInterval(() => {
+        this.img = this.imageCache[this.IMAGES_HURT[i]];
+        i++;
+
+        if (i >= this.IMAGES_HURT.length) {
+            clearInterval(interval); 
+            this.isHurtPlaying = false; 
+        }
+    }, 300);
+}
+
 
     isHurt() {
         let timepassed = new Date().getTime() - this.lastHit; // Difference in ms

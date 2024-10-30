@@ -10,6 +10,8 @@ class World {
     coinBar = new CoinBar();
     poisonBar = new PoisonBar();
     throwableObject = [];
+    coins = [];
+
     background_sound = new Audio('audio/sound.mp3');
     
 
@@ -18,6 +20,9 @@ class World {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
+        this.level = level1;
+        this.coins = this.level.light.filter(obj => obj instanceof Coin);
+        this.poisons = this.level.light.filter(obj => obj instanceof Posion);
         this.draw();
         this.setWorld();
         // this.playBackgroundMusic();
@@ -30,12 +35,14 @@ class World {
     }
 
     run() {
-        setInterval(() => {
+    setInterval(() => {
+        this.checkCollisions();
+        this.checkThrowObjects();
+        this.checkCharacterCoinCollision();
+        this.checkCharacterPoisonCollision();
+    }, 200);
+}
 
-            this.checkCollisions();
-            this.checkThrowObjects();
-        }, 200);
-    }
 
     checkThrowObjects() {
         if (this.keyboard.D) {
@@ -53,21 +60,35 @@ class World {
             });
     }
 
-    checkCharacterCoinCollision(){
-        this.level.coins.forEach((coin) => {
-            if(!coin.isCollected && this.character.isCharacterColliding(coin)){
-                coin.collect();
-                this.coinBar.coinCollected();
-                coin.isCollected = true;
-            }
-        })
-    }
+checkCharacterCoinCollision() {
+    this.coins.forEach((coin) => {  
+        if (!coin.isCollected && this.character.isColliding(coin)) {
+            coin.collect();  
+            this.coinBar.coinCollected();  
+            coin.isCollected = true;
+        }
+    });
+}
+
+
+checkCharacterPoisonCollision() {
+    this.poisons.forEach((poison) => {
+        if (!poison.isCollected && this.character.isColliding(poison)) {
+            poison.collect(); 
+            this.poisonBar.poisonCollected(); 
+            poison.isCollected = true;  
+        }
+    });
+}
+
+
+
 
 
     playBackgroundMusic() {
-        this.background_sound.loop = true; // Wiederholt die Musik in einer Schleife
-        this.background_sound.volume = 0.5; // Optional: Lautstärke anpassen (z.B. 50%)
-        this.background_sound.play(); // Musik abspielen
+        this.background_sound.loop = true;
+        this.background_sound.volume = 0.5;
+        this.background_sound.play();
     }
 
 

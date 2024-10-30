@@ -3,6 +3,7 @@ class Posion extends MovableObject {
     height = 80;
     width = 60;
     speed = 0;
+    isCollected = false; 
     IMAGES_SWIMM = [
         'img/4. Marcadores/Posión/Animada/1.png',
         'img/4. Marcadores/Posión/Animada/2.png',
@@ -22,12 +23,23 @@ class Posion extends MovableObject {
         this.animate();
     }
 
-
     animate() {
         this.moveLeft();
 
         setInterval(() => {
-            this.playAnimation(this.IMAGES_SWIMM);
+            if (!this.isCollected) {  
+                this.playAnimation(this.IMAGES_SWIMM);
+            }
         }, 200);
+    }
+
+    collect() {
+        this.isCollected = true;  
+        let flyUpInterval = setInterval(() => {
+            this.y -= 5;  
+            if (this.y < -100) { 
+                clearInterval(flyUpInterval); 
+            }
+        }, 1000 / 60);  
     }
 }

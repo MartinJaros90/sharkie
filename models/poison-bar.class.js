@@ -1,4 +1,4 @@
-class PoisonBar extends StatusBar{
+class PoisonBar extends StatusBar {
     IMAGES = [
         'img/4. Marcadores/Purple/0_.png',
         'img/4. Marcadores/Purple/20_.png',
@@ -8,25 +8,23 @@ class PoisonBar extends StatusBar{
         'img/4. Marcadores/Purple/100_.png'
     ];
 
-   percentageCoins = 0;
+    percentagePoison = 10;  
     x = 40;
     y = 80;
 
-
-    constructor(){
+    constructor() {
         super();
         this.loadImages(this.IMAGES);
-        this.setPercentage(0);
+        this.setPercentage(0);  
     }
 
-
-   /**
-    * This function handles the case when a coin is collected and increments the coin percentage.
-    */
-    coinCollected(){
-        this.percentageCoins += 20;
-        this.setPercentage(this.percentageCoins);
+    poisonCollected() {
+        console.log('Poison collected, percentage before:', this.percentagePoison);  
+        this.percentagePoison += 20;  
+        if (this.percentagePoison > 100) {
+            this.percentagePoison = 100; 
+        }
+        this.setPercentage(this.percentagePoison);  
+        console.log('Percentage after:', this.percentagePoison); 
     }
-
-
 }
