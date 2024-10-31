@@ -27,4 +27,14 @@ class PoisonBar extends StatusBar {
         this.setPercentage(this.percentagePoison);  
         console.log('Percentage after:', this.percentagePoison); 
     }
+
+    poisonThrown() {
+        console.log('Poison thrown, percentage before:', this.percentagePoison);  
+        this.percentagePoison -= 20;  
+        if (this.percentagePoison < 0) {
+            this.percentagePoison = 0; 
+        }
+        this.setPercentage(this.percentagePoison);  
+        console.log('Percentage after:', this.percentagePoison); 
+    }
 }

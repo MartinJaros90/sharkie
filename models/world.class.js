@@ -10,6 +10,7 @@ class World {
     coinBar = new CoinBar();
     poisonBar = new PoisonBar();
     throwableObject = [];
+    collectedPoisons = 0;
     coins = [];
 
     background_sound = new Audio('audio/sound.mp3');
@@ -44,12 +45,16 @@ class World {
 }
 
 
-    checkThrowObjects() {
-        if (this.keyboard.D) {
-            let bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100)
-            this.throwableObject.push(bottle);
-        }
+checkThrowObjects() {
+    if (this.keyboard.D && this.collectedPoisons > 0) {  
+        let bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
+        this.throwableObject.push(bottle);
+        this.collectedPoisons--;  
+        this.poisonBar.poisonThrown(); 
     }
+}
+
+
 
     checkCollisions() {
             this.level.enemies.forEach((enemy) => { 
@@ -76,14 +81,11 @@ checkCharacterPoisonCollision() {
         if (!poison.isCollected && this.character.isColliding(poison)) {
             poison.collect(); 
             this.poisonBar.poisonCollected(); 
+            this.collectedPoisons++;  
             poison.isCollected = true;  
         }
     });
 }
-
-
-
-
 
     playBackgroundMusic() {
         this.background_sound.loop = true;
@@ -134,7 +136,7 @@ checkCharacterPoisonCollision() {
         }
 
         mo.draw(this.ctx);
-        mo.drawFrame(this.ctx);
+        // mo.drawFrame(this.ctx);
 
         if (mo.otherDirection) {
             this.flipImageBack(mo);
