@@ -70,6 +70,16 @@ class Character extends MovableObject {
         'img/1.Sharkie/5.Hurt/1.Poisoned/4.png',
         'img/1.Sharkie/5.Hurt/1.Poisoned/5.png'
     ];
+    IMAGES_THROW = [
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/1.png',
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/2.png',
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/3.png',
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/4.png',
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/5.png',
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/6.png',
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/7.png',
+        'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/8.png'
+    ];
     world;
     swimming_sound = new Audio('audio/swimm.mp3');
     idleInterval = null;
@@ -82,8 +92,24 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_LONG_IDLE);
         this.loadImages(this.IMAGES_DEAD);
         this.loadImages(this.IMAGES_HURT);
+        this.loadImages(this.IMAGES_THROW);
 
         this.animate();
+    }
+
+    startThrowAnimation(callback) {
+        this.currentImage = 0; 
+
+        this.throwAnimationInterval = setInterval(() => {
+            this.playAnimation(this.IMAGES_THROW);
+
+            if (this.currentImage >= this.IMAGES_THROW.length) {
+                clearInterval(this.throwAnimationInterval);
+                this.throwAnimationInterval = null;
+                
+                if (callback) callback();
+            }
+        }, 1000 / 25);
     }
 
     playLongIdleAnimation() {
@@ -176,4 +202,19 @@ class Character extends MovableObject {
     playIdleAnimation() {
         this.playAnimation(this.IMAGES_IDLE);
     }
+
+   
+
+    moveUp() {
+        if (this.y > -120) { 
+            this.y -= this.speed;
+        }
+    }
+
+    moveDown() {
+        if (this.y + this.height < 530) { 
+            this.y += this.speed;
+        }
+    }
+
 }

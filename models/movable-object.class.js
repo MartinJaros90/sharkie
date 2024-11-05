@@ -64,6 +64,18 @@ isColliding(mo) {
         }
     }
 
+
+hasSimpleCollisionWith(otherObject) {
+    return (
+        this.x + this.width > otherObject.x &&
+        this.x < otherObject.x + otherObject.width &&
+        this.y + this.height > otherObject.y &&
+        this.y < otherObject.y + otherObject.height
+    );
+}
+
+
+
 playHurtAnimation() {
     this.isHurtPlaying = true; 
 

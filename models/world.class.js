@@ -1,6 +1,10 @@
 class World {
 
     character = new Character();
+
+    canvasWidth = 720;  
+    canvasHeight = 480;
+
     level = level1;
     canvas;
     ctx;
@@ -41,29 +45,40 @@ class World {
         this.checkThrowObjects();
         this.checkCharacterCoinCollision();
         this.checkCharacterPoisonCollision();
+        this.checkSpaceThrow();
+        this.checkBubbleEnemyCollision();
     }, 200);
 }
 
 
 checkThrowObjects() {
-    if (this.keyboard.D && this.collectedPoisons > 0) {  
-        let bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
-        this.throwableObject.push(bottle);
-        this.collectedPoisons--;  
-        this.poisonBar.poisonThrown(); 
+    if (this.keyboard.D && this.collectedPoisons > 0) {
+        let poisonBubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
+        this.throwableObject.push(poisonBubble);
+        this.collectedPoisons--;
+        this.poisonBar.poisonThrown();
+    }
+}  
+
+    
+checkSpaceThrow() {
+    if (this.keyboard.SPACE && !this.character.throwAnimationInterval) { 
+        this.character.startThrowAnimation(() => {
+            let bubble = new NormalBubble(this.character.x + 100, this.character.y + 100);
+            this.throwableObject.push(bubble);
+        });
     }
 }
+ 
 
-
-
-    checkCollisions() {
-            this.level.enemies.forEach((enemy) => { 
-               if (this.character.isColliding(enemy)) {
-                   this.character.hit();
-                   this.statusBar.setPercentage(this.character.energy);
-               } 
-            });
-    }
+checkCollisions() {
+        this.level.enemies.forEach((enemy) => { 
+            if (this.character.isColliding(enemy)) {
+                this.character.hit();
+                this.statusBar.setPercentage(this.character.energy);
+            } 
+        });
+}
 
 checkCharacterCoinCollision() {
     this.coins.forEach((coin) => {  
@@ -85,7 +100,24 @@ checkCharacterPoisonCollision() {
             poison.isCollected = true;  
         }
     });
+    }
+    
+checkBubbleEnemyCollision() {
+    this.throwableObject.forEach((bubble, bubbleIndex) => {
+        this.level.enemies.forEach((enemy, enemyIndex) => {
+            if (bubble.hasSimpleCollisionWith(enemy) && (enemy instanceof EnemyJelly || enemy instanceof EnemyYellow)) {
+                this.throwableObject.splice(bubbleIndex, 1);
+
+                enemy.playHitAnimation(() => {
+                this.level.enemies.splice(enemyIndex, 1); 
+                });
+            }
+        });
+    });
 }
+
+
+
 
     playBackgroundMusic() {
         this.background_sound.loop = true;
@@ -136,7 +168,7 @@ checkCharacterPoisonCollision() {
         }
 
         mo.draw(this.ctx);
-        // mo.drawFrame(this.ctx);
+        mo.drawFrame(this.ctx);
 
         if (mo.otherDirection) {
             this.flipImageBack(mo);
@@ -154,4 +186,5 @@ checkCharacterPoisonCollision() {
         mo.x = mo.x * -1;
         this.ctx.restore();
     }
+    
 }

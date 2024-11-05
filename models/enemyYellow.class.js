@@ -8,10 +8,18 @@ class EnemyYellow extends MovableObject {
         'img/2.Enemy/2 Jelly fish/Regular damage/Yellow 3.png',
         'img/2.Enemy/2 Jelly fish/Regular damage/Yellow 4.png',
     ];
+    IMAGES_HIT = [
+        'img/2.Enemy/2 Jelly fish/Dead/Yellow/y1.png',
+        'img/2.Enemy/2 Jelly fish/Dead/Yellow/y2.png',
+        'img/2.Enemy/2 Jelly fish/Dead/Yellow/y3.png',
+        'img/2.Enemy/2 Jelly fish/Dead/Yellow/y4.png'
+    ];
 
     constructor() {
         super().loadImage(this.IMAGES_SWIMM[0]);
         this.loadImages(this.IMAGES_SWIMM);
+        this.loadImages(this.IMAGES_HIT);
+
 
         this.animate();
 
@@ -29,5 +37,17 @@ class EnemyYellow extends MovableObject {
         setInterval(() => {
             this.playAnimation(this.IMAGES_SWIMM);
         }, 200);
+    }
+
+    playHitAnimation(callback) {
+        this.currentImage = 0;
+        const interval = setInterval(() => {
+            this.playAnimation(this.IMAGES_HIT);
+
+            if (this.currentImage >= this.IMAGES_HIT.length) {
+                clearInterval(interval);
+                if (callback) callback(); // Gegner entfernen
+            }
+        }, 1000 / 30);
     }
 }
