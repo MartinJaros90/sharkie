@@ -80,6 +80,16 @@ class Character extends MovableObject {
         'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/7.png',
         'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/8.png'
     ];
+    IMAGES_SLAP = [
+        'img/1.Sharkie/4.Attack/Fin slap/1.png',
+        'img/1.Sharkie/4.Attack/Fin slap/2.png',
+        'img/1.Sharkie/4.Attack/Fin slap/3.png',
+        'img/1.Sharkie/4.Attack/Fin slap/4.png',
+        'img/1.Sharkie/4.Attack/Fin slap/5.png',
+        'img/1.Sharkie/4.Attack/Fin slap/6.png',
+        'img/1.Sharkie/4.Attack/Fin slap/7.png',
+        'img/1.Sharkie/4.Attack/Fin slap/8.png'
+    ];
     world;
     swimming_sound = new Audio('audio/swimm.mp3');
     idleInterval = null;
@@ -93,6 +103,7 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_DEAD);
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_THROW);
+        this.loadImages(this.IMAGES_SLAP);
 
         this.animate();
     }

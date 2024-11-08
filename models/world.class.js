@@ -16,6 +16,7 @@ class World {
     throwableObject = [];
     collectedPoisons = 0;
     coins = [];
+     remainingPoisonBubbles = 0;
 
     background_sound = new Audio('audio/sound.mp3');
     
@@ -62,11 +63,20 @@ checkThrowObjects() {
 
     
 checkSpaceThrow() {
-    if (this.keyboard.SPACE && !this.character.throwAnimationInterval) { 
-        this.character.startThrowAnimation(() => {
-            let bubble = new NormalBubble(this.character.x + 100, this.character.y + 100);
-            this.throwableObject.push(bubble);
-        });
+        if (this.keyboard.SPACE && !this.character.throwAnimationInterval) {
+            this.character.startThrowAnimation(() => {
+                let bubble;
+                
+                if (this.remainingPoisonBubbles > 0) {
+                    bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
+                    this.remainingPoisonBubbles--;
+                } else {
+                    bubble = new NormalBubble(this.character.x + 100, this.character.y + 100);
+                }
+
+                this.throwableObject.push(bubble);
+                this.poisonBar.update(this.remainingPoisonBubbles); // Aktualisiere die Anzeige der Gift-Bubbles
+            });
     }
 }
  
@@ -91,15 +101,18 @@ checkCharacterCoinCollision() {
 }
 
 
-checkCharacterPoisonCollision() {
-    this.poisons.forEach((poison) => {
-        if (!poison.isCollected && this.character.isColliding(poison)) {
-            poison.collect(); 
-            this.poisonBar.poisonCollected(); 
-            this.collectedPoisons++;  
-            poison.isCollected = true;  
-        }
-    });
+    checkCharacterPoisonCollision() {
+        this.poisons.forEach((poison) => {
+            if (!poison.isCollected && this.character.isColliding(poison)) {
+                poison.collect();
+                this.poisonBar.poisonCollected();
+                
+                this.collectedPoisons++;
+                this.remainingPoisonBubbles++;
+                
+                poison.isCollected = true;
+            }
+        });
     }
     
 checkBubbleEnemyCollision() {

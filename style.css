@@ -2,11 +2,13 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* background-image: url(./img/background.jpg);
-    height: 100vh; 
-  background-position: center; 
-  background-repeat: no-repeat; 
-  background-size: cover;  */
+    font-family: 'luckiest-guy', Georgia, 'Times New Roman', Times, serif;
+    background-image: url('img/3. Background/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    margin: 0;
 }
 
 canvas{
@@ -17,4 +19,9 @@ h1{
     font-size: 88px;
     margin-top: 0;
     color: rgb(133, 30, 229);
+}
+
+@font-face {
+    font-family: 'luckiest-guy';
+    src: url('./img/5.Font/LuckiestGuy-Regular.ttf');
 }
