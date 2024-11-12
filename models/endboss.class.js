@@ -36,19 +36,33 @@ class Endboss extends MovableObject{
 
     ];  //Videos von JUNUS "Jump animationen anzeigen"
 
+    hadFirstContact = false;
+
     constructor() {
-        super().loadImage(this.IMAGES_SWIMM[0]);
+        super();
         this.loadImages(this.IMAGES_SWIMM);
         this.loadImages(this.IMAGES_INTRODUCE);
         this.x = 2400;
         this.animate();
     }
 
-    animate() {
-        setInterval(() => {
+animate() {
+    let i = 0;
+    setInterval(() => {
+        if (this.world?.character?.x > 1700 && !this.hadFirstContact) {
+            i = 0;
+            this.hadFirstContact = true;
+        }
+        
+        if (i < 10) {
+            this.playAnimation(this.IMAGES_INTRODUCE);
+        } else {
             this.playAnimation(this.IMAGES_SWIMM);
-        }, 200);
-    }
+        }
+
+        i++;
+    }, 150);
+}
 
 
 }

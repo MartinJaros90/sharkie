@@ -1,7 +1,7 @@
 class EnemyJelly extends MovableObject {
 
-    height = 100;
-    width = 100;
+    height = 80;
+    width = 80;
     IMAGES_SWIMM = [
         'img/2.Enemy/2 Jelly fish/Regular damage/Lila 1.png',
         'img/2.Enemy/2 Jelly fish/Regular damage/Lila 2.png',

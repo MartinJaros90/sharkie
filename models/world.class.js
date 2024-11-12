@@ -37,8 +37,13 @@ class World {
 
 
     setWorld() {
-        this.character.world = this;
-    }
+    this.character.world = this;
+    this.level.enemies.forEach(enemy => {
+        if (enemy instanceof Endboss) {
+            enemy.world = this;
+        }
+    });
+}
 
     run() {
     setInterval(() => {
@@ -53,7 +58,7 @@ class World {
 
 
 checkThrowObjects() {
-    if (this.keyboard.D && this.collectedPoisons > 0) {
+    if (this.keyboard.P && this.collectedPoisons > 0) {
         let poisonBubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
         this.throwableObject.push(poisonBubble);
         this.collectedPoisons--;
@@ -63,22 +68,23 @@ checkThrowObjects() {
 
     
 checkSpaceThrow() {
-        if (this.keyboard.SPACE && !this.character.throwAnimationInterval) {
-            this.character.startThrowAnimation(() => {
-                let bubble;
-                
-                if (this.remainingPoisonBubbles > 0) {
-                    bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
-                    this.remainingPoisonBubbles--;
-                } else {
-                    bubble = new NormalBubble(this.character.x + 100, this.character.y + 100);
-                }
+    if (this.keyboard.SPACE && !this.character.throwAnimationInterval) {
+        this.character.startThrowAnimation(() => {
+            let bubble;
+            
+            if (this.remainingPoisonBubbles > 0) {
+                bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
+                this.remainingPoisonBubbles--;
+                this.poisonBar.poisonThrown(); 
+            } else {
+                bubble = new NormalBubble(this.character.x + 100, this.character.y + 100);
+            }
 
-                this.throwableObject.push(bubble);
-                this.poisonBar.update(this.remainingPoisonBubbles); // Aktualisiere die Anzeige der Gift-Bubbles
-            });
+            this.throwableObject.push(bubble);
+        });
     }
 }
+
  
 
 checkCollisions() {
@@ -115,20 +121,40 @@ checkCharacterCoinCollision() {
         });
     }
     
-checkBubbleEnemyCollision() {
+// checkBubbleEnemyCollision() {
+//     this.throwableObject.forEach((bubble, bubbleIndex) => {
+//         this.level.enemies.forEach((enemy, enemyIndex) => {
+//             // Prüfen, ob es eine Gift-Bubble ist und ob sie eine Kollision mit dem Gegner hat
+//             if (bubble instanceof PoisonBubble && bubble.hasSimpleCollisionWith(enemy)) {
+//                 // Entferne die Gift-Bubble nach der Kollision
+//                 this.throwableObject.splice(bubbleIndex, 1);
+
+//                 // Gegner-Entfernung nur bei Gift-Bubbles
+//                 enemy.playHitAnimation(() => {
+//                     this.level.enemies.splice(enemyIndex, 1); // Entferne den Gegner aus dem Spiel
+//                 });
+//             }
+//             // Wenn es eine NormalBubble ist, passiert nichts
+//         });
+//     });
+// }
+
+    
+    
+    checkBubbleEnemyCollision() {
     this.throwableObject.forEach((bubble, bubbleIndex) => {
         this.level.enemies.forEach((enemy, enemyIndex) => {
-            if (bubble.hasSimpleCollisionWith(enemy) && (enemy instanceof EnemyJelly || enemy instanceof EnemyYellow)) {
+            if (bubble instanceof PoisonBubble && bubble.hasSimpleCollisionWith(enemy)) {
                 this.throwableObject.splice(bubbleIndex, 1);
-
                 enemy.playHitAnimation(() => {
-                this.level.enemies.splice(enemyIndex, 1); 
+                    this.level.enemies.splice(enemyIndex, 1);
                 });
+            } else if (bubble instanceof NormalBubble && bubble.hasSimpleCollisionWith(enemy)) {
+                bubble.captureEnemy(enemy); // Fange den Gegner in der Blase ein
             }
         });
     });
-}
-
+}    
 
 
 

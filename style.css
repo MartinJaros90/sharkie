@@ -13,15 +13,31 @@ body{
 
 canvas{
     background-color: black;
+    display: block;
 }
 
 h1{
     font-size: 88px;
     margin-top: 0;
     color: rgb(133, 30, 229);
+    text-shadow: 4px 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 @font-face {
     font-family: 'luckiest-guy';
     src: url('./img/5.Font/LuckiestGuy-Regular.ttf');
+}
+
+/* Smartphones ------------------*/
+@media only screen and (max-width: 720px){
+    canvas {
+        width: 100%;
+    }
+}
+
+/* Smartphones ------------------*/
+@media only screen and (max-height: 480px){
+    canvas {
+        height: 100vh;
+    }
 }

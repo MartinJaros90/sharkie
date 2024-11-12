@@ -31,4 +31,5 @@ class EnemyBubble extends MovableObject {
             this.playAnimation(this.IMAGES_SWIMM);
         }, 200);
     }
+    
 }
