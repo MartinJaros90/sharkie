@@ -86,15 +86,16 @@ checkSpaceThrow() {
 }
 
  
-
 checkCollisions() {
-        this.level.enemies.forEach((enemy) => { 
-            if (this.character.isColliding(enemy)) {
-                this.character.hit();
-                this.statusBar.setPercentage(this.character.energy);
-            } 
-        });
+    this.level.enemies.forEach((enemy) => { 
+        // Nur Kollision prüfen, wenn der Gegner NICHT in einer Blase gefangen ist
+        if (this.character.isColliding(enemy) && !enemy.isTrappedInBubble) {
+            this.character.hit();
+            this.statusBar.setPercentage(this.character.energy);
+        } 
+    });
 }
+
 
 checkCharacterCoinCollision() {
     this.coins.forEach((coin) => {  
@@ -141,20 +142,18 @@ checkCharacterCoinCollision() {
 
     
     
-    checkBubbleEnemyCollision() {
+checkBubbleEnemyCollision() {
     this.throwableObject.forEach((bubble, bubbleIndex) => {
         this.level.enemies.forEach((enemy, enemyIndex) => {
-            if (bubble instanceof PoisonBubble && bubble.hasSimpleCollisionWith(enemy)) {
-                this.throwableObject.splice(bubbleIndex, 1);
-                enemy.playHitAnimation(() => {
-                    this.level.enemies.splice(enemyIndex, 1);
-                });
-            } else if (bubble instanceof NormalBubble && bubble.hasSimpleCollisionWith(enemy)) {
-                bubble.captureEnemy(enemy); // Fange den Gegner in der Blase ein
+            if (bubble instanceof NormalBubble && 
+                !bubble.enemyCaptured && // Nur wenn noch kein Gegner in der Blase ist
+                bubble.hasSimpleCollisionWith(enemy) && 
+                !enemy.isTrappedInBubble) { // Nur wenn der Gegner noch nicht gefangen ist
+                    bubble.captureEnemy(enemy);
             }
         });
     });
-}    
+}
 
 
 

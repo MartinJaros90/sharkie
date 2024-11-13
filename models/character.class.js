@@ -135,7 +135,11 @@ class Character extends MovableObject {
     animate() {
         setInterval(() => {
             this.swimming_sound.pause();
+
+            if (this.isStunned) return;
+
             let isMoving = false;
+        
 
             if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
                 this.moveRight();
@@ -165,6 +169,10 @@ class Character extends MovableObject {
                 isMoving = true;
             }
 
+             if (this.world.keyboard.D && !this.isStunned) {
+                this.slapAttack();
+            }
+
             if (this.world.keyboard.D) {
                 this.slapAttack();
             }
@@ -187,16 +195,18 @@ class Character extends MovableObject {
             }
         }, 1000 / 60);
 
-       setInterval(() => {
-            if (this.isDead()) {
-                this.playAnimation(this.IMAGES_DEAD);
-            } else if (this.isHurt()) {
-                this.playHurtAnimation(this.IMAGES_HURT);
-            }
-            if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || this.world.keyboard.UP || this.world.keyboard.DOWN) {
+        setInterval(() => {
+        if (this.isDead()) {
+            this.playAnimation(this.IMAGES_DEAD);
+        } else if (this.isHurt() && !this.isStunned) {
+            this.playAnimation(this.IMAGES_HURT);
+        } else if (!this.isStunned) { // Nur Schwimm-Animation wenn nicht betäubt
+            if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || 
+                this.world.keyboard.UP || this.world.keyboard.DOWN) {
                 this.playAnimation(this.IMAGES_SWIMM);
             }
-        }, 50);
+        }
+    }, 50);
     }
 
     startIdleAnimation() {
@@ -208,7 +218,7 @@ class Character extends MovableObject {
     startLongIdleTimer() {
         this.longIdleTimeout = setTimeout(() => {
             this.playLongIdleAnimation();
-        }, 5000);
+        }, 8000);
     }
 
     playIdleAnimation() {

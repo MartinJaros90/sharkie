@@ -77,26 +77,34 @@ hasSimpleCollisionWith(otherObject) {
 
 
 playHurtAnimation() {
-    this.isHurtPlaying = true; 
-
+    if (this.isHurtPlaying) return;
+    this.isHurtPlaying = true;
+    
+    // Stoppe andere Animationen
+    clearInterval(this.idleInterval);
+    clearInterval(this.longIdleInterval);
+    clearTimeout(this.longIdleTimeout);
+    
     let i = 0;
-    let interval = setInterval(() => {
-        this.img = this.imageCache[this.IMAGES_HURT[i]];
-        i++;
-
-        if (i >= this.IMAGES_HURT.length) {
-            clearInterval(interval); 
-            this.isHurtPlaying = false; 
+    let hurtInterval = setInterval(() => {
+        if (i < this.IMAGES_HURT.length) {
+            this.img = this.imageCache[this.IMAGES_HURT[i]];
+            i++;
+        } else {
+            clearInterval(hurtInterval);
+            this.isHurtPlaying = false;
+            if (this.startIdleAnimation) {
+                this.startIdleAnimation();
+            }
         }
-    }, 300);
+    }, 150);
+} 
+
+isHurt() {
+    let timepassed = new Date().getTime() - this.lastHit;
+    timepassed = timepassed / 1000;
+    return timepassed < 0.5; // Kürzere Verletzungszeit
 }
-
-
-    isHurt() {
-        let timepassed = new Date().getTime() - this.lastHit; // Difference in ms
-        timepassed = timepassed / 1000; // Difference in s
-        return timepassed < 1;
-    }
 
     isDead() {
         return this.energy == 0;

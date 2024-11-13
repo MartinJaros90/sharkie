@@ -44,10 +44,10 @@ class NormalBubble extends MovableObject {
         this.height = 70;
         this.width = 70;
         this.enemyCaptured = null; // Referenz auf den gefangenen Gegner
-        this.trow();
+        this.throw();
     }
 
-    trow() {
+    throw() {
         let time = 0;
         this.movementInterval = setInterval(() => {
             if (this.enemyCaptured) {
@@ -70,7 +70,10 @@ class NormalBubble extends MovableObject {
     }
 
     captureEnemy(enemy) {
-        this.enemyCaptured = enemy; // Speichere den Gegner in der Blase
-        clearInterval(enemy.movementInterval); // Stoppe Gegnerbewegung
+    if (!this.enemyCaptured) { // Zusätzliche Sicherheitsprüfung
+        this.enemyCaptured = enemy;
+        enemy.isTrappedInBubble = true;
+        clearInterval(enemy.movementInterval);
     }
+}
 }
