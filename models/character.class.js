@@ -91,7 +91,6 @@ class Character extends MovableObject {
         'img/1.Sharkie/4.Attack/Fin slap/8.png'
     ];
     world;
-    swimming_sound = new Audio('audio/swimm.mp3');
     idleInterval = null;
     longIdleTimeout = null;
 
@@ -134,9 +133,9 @@ class Character extends MovableObject {
 
     animate() {
         setInterval(() => {
-            this.swimming_sound.pause();
 
             if (this.isStunned) return;
+            AudioManager.pause('swimming');
 
             let isMoving = false;
         
@@ -144,14 +143,14 @@ class Character extends MovableObject {
             if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
                 this.moveRight();
                 this.otherDirection = false;
-                this.swimming_sound.play();
+                 AudioManager.play('swimming');
                 isMoving = true;
             }
 
             if (this.world.keyboard.LEFT && this.x > -670) {
                 this.moveLeft();
                 this.otherDirection = true;
-                this.swimming_sound.play();
+                AudioManager.play('swimming');
                 isMoving = true;
             }
 
@@ -159,13 +158,13 @@ class Character extends MovableObject {
 
             if (this.world.keyboard.UP) {
                 this.moveUp();
-                this.swimming_sound.play();
+                AudioManager.play('swimming');
                 isMoving = true;
             }
 
             if (this.world.keyboard.DOWN) {
                 this.moveDown();
-                this.swimming_sound.play();
+                AudioManager.play('swimming');
                 isMoving = true;
             }
 
@@ -241,59 +240,71 @@ isWithinExtendedRange(enemy, range) {
     
 
 slapAttack() {
-    const extendedRange = 20; // Erweiterung in Pixeln
-
-    this.currentImage = 0;
-
     if (this.slapAnimationInterval) return;
 
+    this.currentImage = 0;
+    this.isSlapping = true;
+    let slapHitRegistered = false;
+    let originalWidth = this.width;
+    let originalX = this.x;
+
+    // Langsamere Animation
     this.slapAnimationInterval = setInterval(() => {
-        this.playAnimation(this.IMAGES_SLAP);
-
-        let hitRegistered = false;
-
-        for (let index = 0; index < this.world.level.enemies.length; index++) {
-            const enemy = this.world.level.enemies[index];
-
-            if (this.isWithinExtendedRange(enemy, extendedRange) && !hitRegistered) {
-                hitRegistered = true;
-
-                if (typeof enemy.playHitAnimation === 'function') {
-                    enemy.playHitAnimation();
-                }
-                if (!(enemy instanceof Endboss)) {
-                    this.animateEnemyFlyOff(enemy, () => {
-                        this.world.level.enemies.splice(index, 1);
-                    });
-                }
-                break;
-            }
+        // Nur die Streckung während der ersten Hälfte der Animation
+        if (this.currentImage < this.IMAGES_SLAP.length / 2) {
+            this.width = originalWidth * 1.15; // Leichte Streckung
+        } else {
+            // Zurück zur normalen Breite
+            this.width = originalWidth;
         }
 
+        // Langsamere Animation
+        if (this.currentImage % 2 === 0) { // Nur jeden zweiten Frame animieren
+            this.playAnimation(this.IMAGES_SLAP);
+        }
+
+        // Kollisionsprüfung während der Slap-Animation
+        if (this.currentImage >= 3 && this.currentImage <= 6 && !slapHitRegistered) {
+            this.world.level.enemies.forEach((enemy, index) => {
+                if (this.isWithinExtendedRange(enemy, 20) && !slapHitRegistered) {
+                    slapHitRegistered = true;
+                    AudioManager.play('slap');
+
+                    if (enemy instanceof Endboss) {
+                        enemy.hit();
+                    } else {
+                        this.world.startKnockbackAnimation(enemy);
+                    }
+                }
+            });
+        }
+
+        // Animation beenden
         if (this.currentImage >= this.IMAGES_SLAP.length) {
             clearInterval(this.slapAnimationInterval);
             this.slapAnimationInterval = null;
+            this.isSlapping = false;
+            this.width = originalWidth;
         }
-    }, 1000 / 25);
+    }, 1000 / 15); // 15 FPS für langsamere Animation
 }
 
-animateEnemyFlyOff(enemy, onComplete) {
-    let flyOffInterval = setInterval(() => {
-        enemy.y -= 7;
-        enemy.x += 7;
+// Verbesserte Reichweitenprüfung
+isWithinExtendedRange(enemy, range) {
+    let attackBox = {
+        x: this.otherDirection ? this.x - range : this.x + this.width,
+        y: this.y + this.height * 0.3, // Etwa auf Höhe der Flosse
+        width: range,
+        height: this.height * 0.4  // Höhe des Angriffsbereichs
+    };
 
-        if (enemy.y < -enemy.height || enemy.x > this.world.canvasWidth) {
-            clearInterval(flyOffInterval);
-            if (onComplete) onComplete();
-        }
-    }, 1000 / 60);
-    }
-    
-
-
-
-
-
+    return (
+        attackBox.x < enemy.x + enemy.width &&
+        attackBox.x + attackBox.width > enemy.x &&
+        attackBox.y < enemy.y + enemy.height &&
+        attackBox.y + attackBox.height > enemy.y
+    );
+}
 
     
     moveUp() {

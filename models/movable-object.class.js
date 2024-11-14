@@ -32,31 +32,47 @@ class MovableObject extends DrawableObject{
     }
 
 
-isColliding(mo) {
-    let offsetX = 40; 
-    let offsetY = 40; 
-    let offsetTop = 120; 
-
-    let reducedWidth = this.width - 2 * offsetX; 
-    let reducedHeight = this.height - offsetY - offsetTop; 
-
-    let collides = (this.x + offsetX + reducedWidth > mo.x &&
+    isColliding(mo) {
+        if (mo instanceof Endboss) {
+            // Große Offsets für den Endboss
+            let bossOffsetX = 100;  // Von 160 auf 100 reduziert
+            let bossOffsetY = 100;  // Von 600 auf 100 reduziert
+            let bossOffsetTop = 100; // Von 500 auf 100 reduziert
+            
+            // Offsets für das kollidierende Objekt (z.B. Bubble)
+            let myOffsetX = 40;
+            let myOffsetY = 20;
+            let myOffsetTop = 140;
+    
+            // Reduzierte Größen
+            let myReducedWidth = this.width - 2 * myOffsetX;
+            let myReducedHeight = this.height - myOffsetY - myOffsetTop;
+            let bossReducedWidth = mo.width - 2 * bossOffsetX;  // Reduziert die 480px Breite
+            let bossReducedHeight = mo.height - bossOffsetY - bossOffsetTop; // Reduziert die 400px Höhe
+    
+            return (this.x + myOffsetX + myReducedWidth > mo.x + bossOffsetX &&
+                    this.y + myOffsetTop + myReducedHeight > mo.y + bossOffsetTop &&
+                    this.x + myOffsetX < mo.x + bossOffsetX + bossReducedWidth &&
+                    this.y + myOffsetTop < mo.y + bossOffsetTop + bossReducedHeight);
+        } else {
+            // Bestehende Kollisionserkennung für andere Objekte
+            let offsetX = 40;
+            let offsetY = 40;
+            let offsetTop = 120;
+    
+            let reducedWidth = this.width - 2 * offsetX;
+            let reducedHeight = this.height - offsetY - offsetTop;
+    
+            return (this.x + offsetX + reducedWidth > mo.x &&
                     this.y + offsetTop + reducedHeight > mo.y &&
                     this.x + offsetX < mo.x + mo.width &&
                     this.y + offsetTop < mo.y + mo.height);
-
-    if (collides) {
-        if (mo instanceof EnemyFish || mo instanceof EnemyPink || mo instanceof EnemyJelly || mo instanceof EnemyBubble || mo instanceof Endboss) {
         }
-        return true;
     }
-    return false;
-}
-
 
 
     hit() {
-        this.energy -= 5;
+        this.energy -= 20; // Änderung von 5 auf 20 für 5 Treffer (100/5 = 20)
         if (this.energy < 0) {
             this.energy = 0;
         } else {
@@ -65,22 +81,42 @@ isColliding(mo) {
     }
 
 
-hasSimpleCollisionWith(otherObject) {
-    return (
-        this.x + this.width > otherObject.x &&
-        this.x < otherObject.x + otherObject.width &&
-        this.y + this.height > otherObject.y &&
-        this.y < otherObject.y + otherObject.height
-    );
-}
+    hasSimpleCollisionWith(otherObject) {
+        if (otherObject instanceof Endboss) {
+            // Spezielle Kollisionserkennung für Endboss
+            let bossOffsetX = 100;
+            let bossOffsetY = 100;
+            let bossOffsetTop = 100;
+    
+            // Reduzierte Größen für den Boss
+            let bossReducedWidth = otherObject.width - 2 * bossOffsetX;
+            let bossReducedHeight = otherObject.height - bossOffsetY - bossOffsetTop;
+    
+            return (
+                this.x + this.width > otherObject.x + bossOffsetX &&
+                this.x < otherObject.x + bossOffsetX + bossReducedWidth &&
+                this.y + this.height > otherObject.y + bossOffsetTop &&
+                this.y < otherObject.y + bossOffsetTop + bossReducedHeight
+            );
+        } else {
+            // Normale Kollisionserkennung für andere Objekte
+            return (
+                this.x + this.width > otherObject.x &&
+                this.x < otherObject.x + otherObject.width &&
+                this.y + this.height > otherObject.y &&
+                this.y < otherObject.y + otherObject.height
+            );
+        }
+    }
 
+
+    
 
 
 playHurtAnimation() {
     if (this.isHurtPlaying) return;
     this.isHurtPlaying = true;
-    
-    // Stoppe andere Animationen
+
     clearInterval(this.idleInterval);
     clearInterval(this.longIdleInterval);
     clearTimeout(this.longIdleTimeout);
@@ -103,7 +139,7 @@ playHurtAnimation() {
 isHurt() {
     let timepassed = new Date().getTime() - this.lastHit;
     timepassed = timepassed / 1000;
-    return timepassed < 0.5; // Kürzere Verletzungszeit
+    return timepassed < 1; // Kürzere Verletzungszeit
 }
 
     isDead() {

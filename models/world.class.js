@@ -31,6 +31,7 @@ class World {
         this.poisons = this.level.light.filter(obj => obj instanceof Posion);
         this.draw();
         this.setWorld();
+        AudioManager.init();
         // this.playBackgroundMusic();
         this.run();
     }
@@ -88,10 +89,20 @@ checkSpaceThrow() {
  
 checkCollisions() {
     this.level.enemies.forEach((enemy) => { 
-        // Nur Kollision prüfen, wenn der Gegner NICHT in einer Blase gefangen ist
-        if (this.character.isColliding(enemy) && !enemy.isTrappedInBubble) {
-            this.character.hit();
-            this.statusBar.setPercentage(this.character.energy);
+        if (this.character.isColliding(enemy)) {
+            if (enemy instanceof Endboss && !enemy.isDead()) {
+                if (!this.character.isHurt() && !this.character.isDead()) {
+                    this.character.hit();
+                    this.statusBar.setPercentage(this.character.energy);
+                    AudioManager.play('hurt');
+                }
+            } else if (!enemy.isTrappedInBubble && !enemy.isDead()) {
+                if (!this.character.isHurt() && !this.character.isDead()) {
+                    this.character.hit();
+                    this.statusBar.setPercentage(this.character.energy);
+                    AudioManager.play('hurt');
+                }
+            }
         } 
     });
 }
@@ -141,18 +152,47 @@ checkCharacterCoinCollision() {
 // }
 
     
-    
 checkBubbleEnemyCollision() {
     this.throwableObject.forEach((bubble, bubbleIndex) => {
         this.level.enemies.forEach((enemy, enemyIndex) => {
-            if (bubble instanceof NormalBubble && 
-                !bubble.enemyCaptured && // Nur wenn noch kein Gegner in der Blase ist
-                bubble.hasSimpleCollisionWith(enemy) && 
-                !enemy.isTrappedInBubble) { // Nur wenn der Gegner noch nicht gefangen ist
-                    bubble.captureEnemy(enemy);
+            if (bubble.hasSimpleCollisionWith(enemy)) {
+                if (bubble instanceof PoisonBubble) {  // Nur bei PoisonBubble!
+                    this.throwableObject.splice(bubbleIndex, 1);
+                    
+                    if (enemy instanceof Endboss) {
+                        enemy.hit();
+                    } else {
+                        this.startKnockbackAnimation(enemy);
+                    }
+                } else if (bubble instanceof NormalBubble && !(enemy instanceof Endboss)) {
+                    if (!bubble.enemyCaptured && !enemy.isTrappedInBubble) {
+                        bubble.captureEnemy(enemy);
+                    }
+                }
             }
         });
     });
+}
+
+startKnockbackAnimation(enemy) {
+    enemy.isKnockedBack = true;
+    let knockbackSpeedX = 15;  
+    let knockbackSpeedY = -15; 
+    let gravity = 0.5;
+    let rotation = 0;
+    
+    let knockbackInterval = setInterval(() => {
+        enemy.x += knockbackSpeedX;
+        enemy.y += knockbackSpeedY;
+        knockbackSpeedY += gravity; 
+        rotation += 8; 
+        enemy.rotation = rotation;
+        
+        if (enemy.x > this.level.level_end_x || enemy.y > this.canvas.height + 100) {
+            clearInterval(knockbackInterval);
+            this.level.enemies = this.level.enemies.filter(e => e !== enemy);
+        }
+    }, 1000 / 60);
 }
 
 
@@ -206,7 +246,7 @@ checkBubbleEnemyCollision() {
         }
 
         mo.draw(this.ctx);
-        mo.drawFrame(this.ctx);
+        // mo.drawFrame(this.ctx);
 
         if (mo.otherDirection) {
             this.flipImageBack(mo);
