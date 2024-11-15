@@ -16,9 +16,7 @@ class World {
     throwableObject = [];
     collectedPoisons = 0;
     coins = [];
-     remainingPoisonBubbles = 0;
-
-    background_sound = new Audio('audio/sound.mp3');
+    remainingPoisonBubbles = 0;
     
 
 
@@ -32,8 +30,14 @@ class World {
         this.draw();
         this.setWorld();
         AudioManager.init();
-        // this.playBackgroundMusic();
         this.run();
+
+        document.addEventListener('click', () => {
+            AudioManager.startBackgroundMusic();
+        }, { once: true });  // 'once: true' bedeutet, der Event Listener wird nach einmaligem Ausführen entfernt
+        
+        this.run();
+    
     }
 
 
@@ -46,7 +50,7 @@ class World {
     });
 }
 
-    run() {
+run() {
     setInterval(() => {
         this.checkCollisions();
         this.checkThrowObjects();
@@ -54,6 +58,13 @@ class World {
         this.checkCharacterPoisonCollision();
         this.checkSpaceThrow();
         this.checkBubbleEnemyCollision();
+        
+        // Boss-Intro-Check über den Endboss selbst
+        this.level.enemies.forEach(enemy => {
+            if (enemy instanceof Endboss) {
+                enemy.checkBossIntro(this.character.x);
+            }
+        });
     }, 200);
 }
 
@@ -76,9 +87,11 @@ checkSpaceThrow() {
             if (this.remainingPoisonBubbles > 0) {
                 bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
                 this.remainingPoisonBubbles--;
-                this.poisonBar.poisonThrown(); 
+                this.poisonBar.poisonThrown();
+                AudioManager.play('bubble');  
             } else {
                 bubble = new NormalBubble(this.character.x + 100, this.character.y + 100);
+                AudioManager.play('bubble'); 
             }
 
             this.throwableObject.push(bubble);
@@ -89,22 +102,63 @@ checkSpaceThrow() {
  
 checkCollisions() {
     this.level.enemies.forEach((enemy) => { 
-        if (this.character.isColliding(enemy)) {
-            if (enemy instanceof Endboss && !enemy.isDead()) {
-                if (!this.character.isHurt() && !this.character.isDead()) {
-                    this.character.hit();
-                    this.statusBar.setPercentage(this.character.energy);
-                    AudioManager.play('hurt');
-                }
-            } else if (!enemy.isTrappedInBubble && !enemy.isDead()) {
-                if (!this.character.isHurt() && !this.character.isDead()) {
-                    this.character.hit();
-                    this.statusBar.setPercentage(this.character.energy);
-                    AudioManager.play('hurt');
-                }
-            }
-        } 
+        if (this.shouldHandleCollision(enemy)) {
+            this.handleCollision(enemy);
+        }
     });
+}
+
+shouldHandleCollision(enemy) {
+    return this.character.isColliding(enemy) && 
+           !this.character.isHurt() && 
+           !this.character.isDead() &&
+           (!enemy.isTrappedInBubble || enemy instanceof Endboss) && 
+           !enemy.isDead();
+}
+
+handleCollision(enemy) {
+    if (enemy instanceof Endboss) {
+        this.handleEndbossCollision();
+    } else {
+        this.handleNormalEnemyCollision(enemy);
+    }
+}
+
+handleEndbossCollision() {
+    this.character.hit();
+    this.statusBar.setPercentage(this.character.energy);
+    AudioManager.play('hurt');
+}
+
+handleNormalEnemyCollision(enemy) {
+    if (this.character.checkElectroShock(enemy)) {
+        this.handleElectroShock();
+    } else {
+        AudioManager.play('hurt');
+    }
+    this.character.hit();
+    this.statusBar.setPercentage(this.character.energy);
+}
+
+handleElectroShock() {
+    this.character.isElectrocuted = true;
+    this.playElectroShockSound();
+    
+    setTimeout(() => {
+        this.character.isElectrocuted = false;
+    }, 1000);
+}
+
+playElectroShockSound() {
+    AudioManager.play('shock');
+    
+    let shockSoundInterval = setInterval(() => {
+        if (this.character.isElectrocuted) {
+            AudioManager.play('shock');
+        } else {
+            clearInterval(shockSoundInterval);
+        }
+    }, 200);
 }
 
 
@@ -114,6 +168,7 @@ checkCharacterCoinCollision() {
             coin.collect();  
             this.coinBar.coinCollected();  
             coin.isCollected = true;
+            AudioManager.play('coin'); 
         }
     });
 }
@@ -197,13 +252,6 @@ startKnockbackAnimation(enemy) {
 
 
 
-    playBackgroundMusic() {
-        this.background_sound.loop = true;
-        this.background_sound.volume = 0.5;
-        this.background_sound.play();
-    }
-
-
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -264,5 +312,7 @@ startKnockbackAnimation(enemy) {
         mo.x = mo.x * -1;
         this.ctx.restore();
     }
+
+    
     
 }

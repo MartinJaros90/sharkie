@@ -70,6 +70,11 @@ class Character extends MovableObject {
         'img/1.Sharkie/5.Hurt/1.Poisoned/4.png',
         'img/1.Sharkie/5.Hurt/1.Poisoned/5.png'
     ];
+    IMAGES_ELECTROSHOCK = [
+        'img/1.Sharkie/5.Hurt/2.Electric shock/1.png',
+        'img/1.Sharkie/5.Hurt/2.Electric shock/2.png',
+        'img/1.Sharkie/5.Hurt/2.Electric shock/3.png',
+    ];
     IMAGES_THROW = [
         'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/1.png',
         'img/1.Sharkie/4.Attack/Bubble trap/op1 (with bubble formation)/2.png',
@@ -93,6 +98,7 @@ class Character extends MovableObject {
     world;
     idleInterval = null;
     longIdleTimeout = null;
+    isElectrocuted = false;
 
     constructor() {
         super().loadImage('img/1.Sharkie/3.Swim/1.png');
@@ -103,7 +109,7 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_THROW);
         this.loadImages(this.IMAGES_SLAP);
-
+        this.loadImages(this.IMAGES_ELECTROSHOCK);
         this.animate();
     }
 
@@ -195,17 +201,22 @@ class Character extends MovableObject {
         }, 1000 / 60);
 
         setInterval(() => {
-        if (this.isDead()) {
-            this.playAnimation(this.IMAGES_DEAD);
-        } else if (this.isHurt() && !this.isStunned) {
-            this.playAnimation(this.IMAGES_HURT);
-        } else if (!this.isStunned) { // Nur Schwimm-Animation wenn nicht betäubt
-            if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || 
-                this.world.keyboard.UP || this.world.keyboard.DOWN) {
-                this.playAnimation(this.IMAGES_SWIMM);
+            if (this.isDead()) {
+                this.playAnimation(this.IMAGES_DEAD);
+            } else if (this.isHurt()) {
+                // Prüfen, welche Art von Schaden
+                if (this.isElectrocuted) {
+                    this.playAnimation(this.IMAGES_ELECTROSHOCK);
+                } else {
+                    this.playAnimation(this.IMAGES_HURT);
+                }
+            } else if (!this.isStunned) {
+                if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT || 
+                    this.world.keyboard.UP || this.world.keyboard.DOWN) {
+                    this.playAnimation(this.IMAGES_SWIMM);
+                }
             }
-        }
-    }, 50);
+        }, 50);
     }
 
     startIdleAnimation() {
@@ -248,22 +259,21 @@ slapAttack() {
     let originalWidth = this.width;
     let originalX = this.x;
 
-    // Langsamere Animation
+    AudioManager.play('slap');
+
     this.slapAnimationInterval = setInterval(() => {
-        // Nur die Streckung während der ersten Hälfte der Animation
+
         if (this.currentImage < this.IMAGES_SLAP.length / 2) {
             this.width = originalWidth * 1.15; // Leichte Streckung
         } else {
-            // Zurück zur normalen Breite
+
             this.width = originalWidth;
         }
 
-        // Langsamere Animation
-        if (this.currentImage % 2 === 0) { // Nur jeden zweiten Frame animieren
+        if (this.currentImage % 2 === 0) { 
             this.playAnimation(this.IMAGES_SLAP);
         }
 
-        // Kollisionsprüfung während der Slap-Animation
         if (this.currentImage >= 3 && this.currentImage <= 6 && !slapHitRegistered) {
             this.world.level.enemies.forEach((enemy, index) => {
                 if (this.isWithinExtendedRange(enemy, 20) && !slapHitRegistered) {
@@ -279,17 +289,15 @@ slapAttack() {
             });
         }
 
-        // Animation beenden
         if (this.currentImage >= this.IMAGES_SLAP.length) {
             clearInterval(this.slapAnimationInterval);
             this.slapAnimationInterval = null;
             this.isSlapping = false;
             this.width = originalWidth;
         }
-    }, 1000 / 15); // 15 FPS für langsamere Animation
+    }, 1000 / 15); 
 }
 
-// Verbesserte Reichweitenprüfung
 isWithinExtendedRange(enemy, range) {
     let attackBox = {
         x: this.otherDirection ? this.x - range : this.x + this.width,
@@ -304,6 +312,28 @@ isWithinExtendedRange(enemy, range) {
         attackBox.y < enemy.y + enemy.height &&
         attackBox.y + attackBox.height > enemy.y
     );
+}
+
+checkElectroShock(enemy) {
+    return enemy instanceof EnemyJelly || enemy instanceof EnemyYellow;
+}
+
+receiveElectroShock() {
+    if (!this.isElectrocuted) {
+        this.isElectrocuted = true;
+        this.currentImage = 0;
+        AudioManager.play('shock');  // Optional: Elektroschock-Sound
+
+        // Elektroschock-Animation abspielen
+        let shockInterval = setInterval(() => {
+            this.playAnimation(this.IMAGES_ELECTROSHOCK);
+            
+            if (this.currentImage >= this.IMAGES_ELECTROSHOCK.length - 1) {
+                clearInterval(shockInterval);
+                this.isElectrocuted = false;
+            }
+        }, 100);
+    }
 }
 
     

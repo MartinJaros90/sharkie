@@ -13,7 +13,7 @@ class Endboss extends MovableObject{
     isAttacking = false;
     attackCooldown = 2000; // 2 Sekunden in Millisekunden
     lastAttack = 0;
-    speed = 2; // Geschwindigkeit der Bewegung
+    speed = 3; // Geschwindigkeit der Bewegung
     introduceFinished = false;
     hadFirstContact = false;
     visible = false;
@@ -98,7 +98,9 @@ class Endboss extends MovableObject{
             if (this.world?.character?.x > 2000 && !this.hadFirstContact) {
                 i = 0;
                 this.hadFirstContact = true;
-                this.visible = true; 
+                this.visible = true;
+                AudioManager.stopBackgroundMusic();
+                AudioManager.play('boss');  // Boss-Musik auch hier starten
             }
             
             if (this.isDead()) {
@@ -127,6 +129,28 @@ class Endboss extends MovableObject{
                 this.playAnimation(this.IMAGES_SWIMM);
             }
         }, 150);
+    }
+
+    checkBossIntro(characterX) {
+        if (characterX > 2000 && !this.hadFirstContact) {
+            this.hadFirstContact = true;
+            AudioManager.stopBackgroundMusic();
+            AudioManager.play('boss');  // Boss-Musik starten
+            this.playIntroAnimation();
+        }
+    }
+    
+    playIntroAnimation() {
+        this.currentImage = 0;
+        this.visible = true;
+        let introInterval = setInterval(() => {
+            this.playAnimation(this.IMAGES_INTRODUCE);
+            if (this.currentImage >= this.IMAGES_INTRODUCE.length) {
+                clearInterval(introInterval);
+                this.introduceFinished = true;
+                this.startMoving();
+            }
+        }, 200);
     }
 
     startMoving() {

@@ -1,7 +1,7 @@
 class AudioManager {
     static sounds = {
         swimming: new Audio('audio/swimm.mp3'),
-        background: new Audio('audio/sound.mp3'),
+        background: new Audio('audio/background.mp3'),
         hurt: new Audio('audio/hurt.mp3'),
         // Neue Sounds einfach hier hinzufügen
         bubble: new Audio('audio/bubble.mp3'),
@@ -9,7 +9,9 @@ class AudioManager {
         poison: new Audio('audio/poison.mp3'),
         slap: new Audio('audio/slap.mp3'),
         victory: new Audio('audio/victory.mp3'),
-        gameOver: new Audio('audio/game-over.mp3')
+        gameOver: new Audio('audio/game-over.mp3'),
+        boss : new Audio('audio/boss-sound.mp3'),
+        shock: new Audio('audio/shock.mp3')
     };
 
     static init() {
@@ -17,9 +19,25 @@ class AudioManager {
         Object.values(this.sounds).forEach(sound => {
             sound.volume = 0.5; // Standardlautstärke
         });
+    
+        // Spezielle Einstellungen für Hintergrundmusik
+        this.sounds.background.loop = true;     // Musik wird endlos wiederholt
+        this.sounds.background.volume = 0.3;    // Etwas leiser als Effekte
+        this.sounds.boss.loop = true;      // Boss-Musik auch in Schleife
+        this.sounds.boss.volume = 0.3; 
+    }
 
-        // Spezielle Einstellungen
-        this.sounds.background.loop = true;
+    static startBackgroundMusic() {
+        this.sounds.background.play();
+    }
+    
+    static stopBackgroundMusic() {
+        this.sounds.background.pause();
+        this.sounds.background.currentTime = 0;
+    }
+    
+    static pauseBackgroundMusic() {
+        this.sounds.background.pause();
     }
 
     static play(soundName) {
