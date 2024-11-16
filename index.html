@@ -66,9 +66,31 @@
                 <img src="img/6.Botones/mute.png" alt="Sound Toggle" id="soundIcon">
             </button>
         </div>
-        <div class="btns-container">
+        
+        <!-- Main Menu Buttons -->
+        <div class="btns-container" id="main-menu">
             <button class="btn start-btn">Start</button>
-            <button class="btn">Instructions</button>
+            <button class="btn" onclick="showInstructions()">Instructions</button>
+        </div>
+    
+        <!-- Instructions Screen (initially hidden) -->
+        <div class="instructions-container" id="instructions" style="display: none;">
+            <div class="instruction-row">
+                <div class="instruction-item">
+                    <img src="img/6.Botones/Key/arrow keys.png" alt="Arrow Keys" class="key-img">
+                    <img src="img/6.Botones/Tittles/Move title.png" alt="Move" class="title-img">
+                </div>
+            </div>
+            <div class="instruction-row">
+                <div class="instruction-item">
+                    <div class="attack-keys">
+                        <img src="img/6.Botones/Key/Space Bar key.png" alt="Space" class="key-img">
+                        <img src="img/6.Botones/Key/D key.png" alt="D Key" class="key-img">
+                    </div>
+                    <img src="img/6.Botones/Tittles/Attack tittle.png" alt="Attack" class="title-img">
+                </div>
+            </div>
+            <button class="btn back-btn" onclick="hideInstructions()">Back</button>
         </div>
     </div>
 

@@ -25,6 +25,16 @@ function toggleSound() {
     }
 }
 
+function showInstructions() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('instructions').style.display = 'flex';
+}
+
+function hideInstructions() {
+    document.getElementById('instructions').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'flex';
+}
+
 window.addEventListener("keydown", (e) => {
     if (e.keyCode ==  39) {
         keyboard.RIGHT = true;

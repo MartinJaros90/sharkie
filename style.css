@@ -191,7 +191,7 @@ h1{
     cursor: pointer;
     padding: 0;
     transition: transform 0.3s ease;
-    width: 40px;  /* Passe die Größe nach Bedarf an */
+    width: 40px;  
     height: 40px;
     display: flex;
     align-items: center;
@@ -209,10 +209,10 @@ h1{
 }
 
 .sound-btn.muted img {
-    opacity: 0.5;  /* Macht das Bild transparenter wenn der Ton aus ist */
+    opacity: 0.5;  
 }
 
-/* Optional: Hinzufügen einer schwebenden Animation */
+
 .sound-btn {
     animation: floatButton 2s ease-in-out infinite;
 }
@@ -224,4 +224,78 @@ h1{
     50% {
         transform: translateY(-5px);
     }
+}
+
+/* Instructions Styling */
+.instructions-container {
+    position: absolute;
+    inset: 0; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 32px;
+    width: 440px;      
+    height: 320px;       
+    margin: auto;          
+    border-radius: 15px;  
+    border: 3px solid rgba(127, 255, 224, 0.6);
+
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.9) 0%,
+        rgba(0, 20, 40, 0.8) 100%
+    );
+    backdrop-filter: blur(5px);
+    box-shadow: 0 0 30px rgba(127, 255, 224, 0.2);
+}
+
+/* Rest des Stylings bleibt gleich */
+.instruction-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 20px;
+}
+
+.instruction-item {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.key-img {
+    height: 45px;        
+    object-fit: contain;
+}
+
+.title-img {
+    height: 30px;     
+    object-fit: contain;
+}
+
+.attack-keys {
+    display: flex;
+    gap: 12px;
+}
+
+.back-btn {
+    margin-top: 32px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.instructions-container {
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
