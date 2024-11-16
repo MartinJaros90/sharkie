@@ -12,20 +12,17 @@ class EnemyFish extends MovableObject {
     IMAGES_HIT = [
         'img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/1.Dead 1 (can animate by going up).png',
         'img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/1.Dead 2 (can animate by going down to the floor after the Fin Slap attack).png',
-        'img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/1.Dead 3 (can animate by going down to the floor after the Fin Slap attack).png',
-        // Weitere Bilder für die Animation
+        'img/2.Enemy/1.Puffer fish (3 color options)/4.DIE/1.Dead 3 (can animate by going down to the floor after the Fin Slap attack).png'
     ];
 
-    constructor() {
-        super().loadImage('img/2.Enemy/1.Puffer fish (3 color options)/1.Swim/1.swim1.png');
+    constructor(x, y) {
+        super().loadImage(this.IMAGES_SWIMM[0]);
         this.loadImages(this.IMAGES_SWIMM);
-         this.loadImages(this.IMAGES_HIT);
-
-        this.animate();
-
-        this.x = 200 + Math.random() * 500;
-        this.y = Math.random() * 420;
+        this.loadImages(this.IMAGES_HIT);
+        this.x = x;
+        this.y = y;
         this.speed = 0.15 + Math.random() * 0.5;
+        this.animate();
     }
 
 

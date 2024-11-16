@@ -3,32 +3,34 @@ class AudioManager {
         swimming: new Audio('audio/swimm.mp3'),
         background: new Audio('audio/background.mp3'),
         hurt: new Audio('audio/hurt.mp3'),
-        // Neue Sounds einfach hier hinzufügen
         bubble: new Audio('audio/bubble.mp3'),
         coin: new Audio('audio/coin.mp3'),
         poison: new Audio('audio/poison.mp3'),
         slap: new Audio('audio/slap.mp3'),
         victory: new Audio('audio/victory.mp3'),
         gameOver: new Audio('audio/game-over.mp3'),
-        boss : new Audio('audio/boss-sound.mp3'),
+        boss: new Audio('audio/boss-sound.mp3'),
         shock: new Audio('audio/shock.mp3')
     };
 
+    static muted = true;
+
     static init() {
-        // Initialisiere Standardeinstellungen für alle Sounds
         Object.values(this.sounds).forEach(sound => {
-            sound.volume = 0.5; // Standardlautstärke
+            sound.volume = 0.5;
+            sound.muted = this.muted;
         });
     
-        // Spezielle Einstellungen für Hintergrundmusik
-        this.sounds.background.loop = true;     // Musik wird endlos wiederholt
-        this.sounds.background.volume = 0.3;    // Etwas leiser als Effekte
-        this.sounds.boss.loop = true;      // Boss-Musik auch in Schleife
-        this.sounds.boss.volume = 0.3; 
+        this.sounds.background.loop = true;
+        this.sounds.background.volume = 0.3;
+        this.sounds.boss.loop = true;
+        this.sounds.boss.volume = 0.3;
     }
 
     static startBackgroundMusic() {
-        this.sounds.background.play();
+        if (!this.muted) {  // Nur abspielen wenn nicht stumm
+            this.sounds.background.play();
+        }
     }
     
     static stopBackgroundMusic() {
@@ -41,7 +43,7 @@ class AudioManager {
     }
 
     static play(soundName) {
-        if (this.sounds[soundName]) {
+        if (this.sounds[soundName] && !this.muted) {  // Prüfe muted Status
             this.sounds[soundName].play();
         }
     }
@@ -61,24 +63,23 @@ class AudioManager {
 
     static setVolume(soundName, volume) {
         if (this.sounds[soundName]) {
-            this.sounds[soundName].volume = volume; // 0.0 bis 1.0
+            this.sounds[soundName].volume = volume;
         }
     }
 
     static muteAll() {
+        this.muted = true;  // Setze den globalen Mute-Status
         Object.values(this.sounds).forEach(sound => {
             sound.muted = true;
         });
+        this.pauseBackgroundMusic();  // Pausiere die Hintergrundmusik
     }
 
     static unmuteAll() {
+        this.muted = false;  // Setze den globalen Mute-Status
         Object.values(this.sounds).forEach(sound => {
             sound.muted = false;
         });
+        this.startBackgroundMusic();  // Starte die Hintergrundmusik
     }
 }
-
-
-// AudioManager.play('bubble');  // Beim Werfen einer Blase
-// AudioManager.play('coin');    // Beim Einsammeln einer Münze
-// AudioManager.play('slap');    // Beim Angriff

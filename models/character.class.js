@@ -99,6 +99,12 @@ class Character extends MovableObject {
     idleInterval = null;
     longIdleTimeout = null;
     isElectrocuted = false;
+    slapCooldown = 3; // 1 Sekunde CooldownslapCooldown
+    cooldownDisplay = '';
+    bubbleCooldown = 800; // 0.8 Sekunden Cooldown
+    canSlap = true;
+    canThrow = true;
+    animateInterval;
 
     constructor() {
         super().loadImage('img/1.Sharkie/3.Swim/1.png');
@@ -110,10 +116,13 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_THROW);
         this.loadImages(this.IMAGES_SLAP);
         this.loadImages(this.IMAGES_ELECTROSHOCK);
-        this.animate();
     }
+    
 
-    startThrowAnimation(callback) {
+   startThrowAnimation(callback) {
+        if (!this.canThrow) return; 
+        
+        this.canThrow = false; 
         this.currentImage = 0; 
 
         this.throwAnimationInterval = setInterval(() => {
@@ -124,6 +133,10 @@ class Character extends MovableObject {
                 this.throwAnimationInterval = null;
                 
                 if (callback) callback();
+                
+                setTimeout(() => {
+                    this.canThrow = true;
+                }, this.bubbleCooldown);
             }
         }, 1000 / 25);
     }
@@ -137,74 +150,67 @@ class Character extends MovableObject {
         }, 500);
     }
 
+    initializeCharacter() {
+        if (this.world) {
+            this.animate();
+        }
+    }
+
     animate() {
-        setInterval(() => {
+        if (!this.world) return;  
 
-            if (this.isStunned) return;
+        this.animateInterval = setInterval(() => {
+            if (!this.world?.keyboard || this.isStunned) return;  
             AudioManager.pause('swimming');
-
+    
             let isMoving = false;
-        
-
+    
             if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
                 this.moveRight();
                 this.otherDirection = false;
-                 AudioManager.play('swimming');
+                AudioManager.play('swimming');
                 isMoving = true;
             }
-
+    
             if (this.world.keyboard.LEFT && this.x > -670) {
                 this.moveLeft();
                 this.otherDirection = true;
                 AudioManager.play('swimming');
                 isMoving = true;
             }
-
+    
             this.world.camera_x = -this.x + 50;
-
+    
             if (this.world.keyboard.UP) {
                 this.moveUp();
                 AudioManager.play('swimming');
                 isMoving = true;
             }
-
+    
             if (this.world.keyboard.DOWN) {
                 this.moveDown();
                 AudioManager.play('swimming');
                 isMoving = true;
             }
-
-             if (this.world.keyboard.D && !this.isStunned) {
+    
+            if (this.world.keyboard.D && !this.isStunned) {
                 this.slapAttack();
             }
-
-            if (this.world.keyboard.D) {
-                this.slapAttack();
-            }
-
+    
+            // Idle-Animation-Handling
             if (isMoving) {
-                clearInterval(this.idleInterval);
-                clearInterval(this.longIdleInterval);
-                clearTimeout(this.longIdleTimeout);
-                this.idleInterval = null;
-                this.longIdleInterval = null;
-                this.longIdleTimeout = null;
+                this.clearIdleAnimations();
             } else {
-                if (!this.idleInterval) {
-                    this.startIdleAnimation();
-                }
-
-                if (!this.longIdleTimeout) {
-                    this.startLongIdleTimer();
-                }
+                this.handleIdleAnimations();
             }
         }, 1000 / 60);
-
-        setInterval(() => {
+    
+        this.characterAnimationInterval = setInterval(() => {
+            if (!this.world?.keyboard) return; 
+    
             if (this.isDead()) {
                 this.playAnimation(this.IMAGES_DEAD);
             } else if (this.isHurt()) {
-                // Prüfen, welche Art von Schaden
                 if (this.isElectrocuted) {
                     this.playAnimation(this.IMAGES_ELECTROSHOCK);
                 } else {
@@ -218,6 +224,26 @@ class Character extends MovableObject {
             }
         }, 50);
     }
+    
+    clearIdleAnimations() {
+        clearInterval(this.idleInterval);
+        clearInterval(this.longIdleInterval);
+        clearTimeout(this.longIdleTimeout);
+        this.idleInterval = null;
+        this.longIdleInterval = null;
+        this.longIdleTimeout = null;
+    }
+    
+    handleIdleAnimations() {
+        if (!this.idleInterval) {
+            this.startIdleAnimation();
+        }
+        if (!this.longIdleTimeout) {
+            this.startLongIdleTimer();
+        }
+    }
+
+
 
     startIdleAnimation() {
         this.idleInterval = setInterval(() => {
@@ -248,25 +274,22 @@ isWithinExtendedRange(enemy, range) {
     
     
     
-    
-
 slapAttack() {
-    if (this.slapAnimationInterval) return;
-
+    if (!this.canSlap || this.slapAnimationInterval) return;
+    
+    this.canSlap = false;  
     this.currentImage = 0;
     this.isSlapping = true;
     let slapHitRegistered = false;
     let originalWidth = this.width;
-    let originalX = this.x;
-
+    
     AudioManager.play('slap');
+    this.startSlapCooldownDisplay();
 
     this.slapAnimationInterval = setInterval(() => {
-
         if (this.currentImage < this.IMAGES_SLAP.length / 2) {
-            this.width = originalWidth * 1.15; // Leichte Streckung
+            this.width = originalWidth * 1.15;
         } else {
-
             this.width = originalWidth;
         }
 
@@ -295,15 +318,39 @@ slapAttack() {
             this.isSlapping = false;
             this.width = originalWidth;
         }
-    }, 1000 / 15); 
+    }, 1000 / 15);  
+}
+
+startSlapCooldownDisplay() {
+    let remainingCooldown = 3; 
+    
+    this.cooldownDisplay = `${remainingCooldown}...`;
+    
+    let cooldownInterval = setInterval(() => {
+        remainingCooldown--;
+        
+        if (remainingCooldown > 0) {
+            this.cooldownDisplay = `${remainingCooldown}...`;
+        } else if (remainingCooldown === 0) {
+            // Zeige SLAP!
+            this.cooldownDisplay = 'SLAP!';
+            
+            setTimeout(() => {
+                this.cooldownDisplay = '';
+                this.canSlap = true;
+            }, 1000);
+            
+            clearInterval(cooldownInterval);
+        }
+    }, 1000);
 }
 
 isWithinExtendedRange(enemy, range) {
     let attackBox = {
         x: this.otherDirection ? this.x - range : this.x + this.width,
-        y: this.y + this.height * 0.3, // Etwa auf Höhe der Flosse
+        y: this.y + this.height * 0.3,
         width: range,
-        height: this.height * 0.4  // Höhe des Angriffsbereichs
+        height: this.height * 0.4
     };
 
     return (
@@ -322,9 +369,8 @@ receiveElectroShock() {
     if (!this.isElectrocuted) {
         this.isElectrocuted = true;
         this.currentImage = 0;
-        AudioManager.play('shock');  // Optional: Elektroschock-Sound
+        AudioManager.play('shock');
 
-        // Elektroschock-Animation abspielen
         let shockInterval = setInterval(() => {
             this.playAnimation(this.IMAGES_ELECTROSHOCK);
             
@@ -336,17 +382,15 @@ receiveElectroShock() {
     }
 }
 
-    
-    moveUp() {
-        if (this.y > -120) { 
-            this.y -= this.speed;
-        }
+moveUp() {
+    if (this.y > -120) { 
+        this.y -= this.speed;
     }
+}
 
-    moveDown() {
-        if (this.y + this.height < 530) { 
-            this.y += this.speed;
-        }
+moveDown() {
+    if (this.y + this.height < 530) { 
+        this.y += this.speed;
     }
-
+}
 }

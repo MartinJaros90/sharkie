@@ -6,17 +6,26 @@ class Endboss extends MovableObject{
     hitCount = 0;
     isDying = false;
     currentDeadImage = 0;
-    initialY = 30;  // Speichere die ursprüngliche Y-Position
+    initialY = 30; 
     deadFloatingInterval = null;
-    floatingOffset = 20;  // Wie weit der Boss hoch und runter schwimmt
-    floatingSpeed = 1;  // Geschwindigkeit der Schwimmbewegung
+    floatingOffset = 20;  
+    floatingSpeed = 0.8;  
     isAttacking = false;
-    attackCooldown = 2000; // 2 Sekunden in Millisekunden
+    attackCooldown = 1500; 
     lastAttack = 0;
-    speed = 3; // Geschwindigkeit der Bewegung
+    speed = 3; 
     introduceFinished = false;
     hadFirstContact = false;
     visible = false;
+    energy = 100;
+    maxHits = 5;
+
+    movementPause = false;
+    pauseDuration = 2000;  
+    verticalSpeed = 1.2;
+    lastDirectionChange = 0;
+    directionChangeInterval = 3000;  
+    verticalDirection = 1;  
 
 
 
@@ -95,14 +104,17 @@ class Endboss extends MovableObject{
     animate() {
         let i = 0;
         setInterval(() => {
+            // Boss-Intro Check
             if (this.world?.character?.x > 2000 && !this.hadFirstContact) {
                 i = 0;
                 this.hadFirstContact = true;
                 this.visible = true;
                 AudioManager.stopBackgroundMusic();
-                AudioManager.play('boss');  // Boss-Musik auch hier starten
+                AudioManager.play('boss');
+                this.world.endbossStatusBar.visible = true;
             }
             
+            // Animations-Logik
             if (this.isDead()) {
                 if (!this.isDying) {
                     if (this.currentDeadImage < this.IMAGES_DEAD.length - 1) {
@@ -115,27 +127,36 @@ class Endboss extends MovableObject{
                     }
                 }
             } else if (this.hadFirstContact && !this.introduceFinished) {
+                // Intro-Animation
                 this.playAnimation(this.IMAGES_INTRODUCE);
                 if (i >= 9) { 
                     this.introduceFinished = true;
                     this.startMoving();
                 }
                 i++;
-            } else if (this.isAttacking) {
-                this.playAnimation(this.IMAGES_ATTACK);
             } else if (this.isHurt()) {
                 this.playAnimation(this.IMAGES_HURT);
+            } else if (this.isAttacking) {
+                this.playAnimation(this.IMAGES_ATTACK);
+            } else if (this.movementPause) {
+                this.img = this.imageCache[this.IMAGES_SWIMM[0]];
             } else {
                 this.playAnimation(this.IMAGES_SWIMM);
             }
-        }, 150);
+            if (!this.isDead() && !this.isHurt() && this.introduceFinished && !this.movementPause) {
+                this.moveVertically();
+            }
+    
+        }, 150); 
     }
 
     checkBossIntro(characterX) {
         if (characterX > 2000 && !this.hadFirstContact) {
             this.hadFirstContact = true;
+            this.visible = true;
             AudioManager.stopBackgroundMusic();
-            AudioManager.play('boss');  // Boss-Musik starten
+            AudioManager.play('boss');
+            this.world.endbossStatusBar.visible = true; 
             this.playIntroAnimation();
         }
     }
@@ -156,28 +177,102 @@ class Endboss extends MovableObject{
     startMoving() {
         setInterval(() => {
             if (!this.isDead() && !this.isHurt() && this.introduceFinished && this.hadFirstContact) {
-                if (this.world?.character) {
-                    if (this.x > this.world.character.x) {
-                        this.x -= this.speed;
-                    }
-                }
+                if (this.movementPause) return; 
+                
+                this.moveHorizontally();
+                this.moveVertically();
+                this.checkDirectionChange();
+                this.randomlyPause();
             }
         }, 1000 / 60);
     }
 
+    moveHorizontally() {
+        if (this.world?.character) {
+            if (this.x > this.world.character.x) {
+                this.x -= this.speed;
+            }
+        }
+    }
+
+    moveVertically() {
+        this.y += this.verticalSpeed * this.verticalDirection;
+        
+        const minY = 50; 
+        const maxY = 180; 
+        
+        if (this.y < minY) {
+            this.y = minY;
+            this.verticalDirection = 1;
+        } else if (this.y > maxY) {
+            this.y = maxY;
+            this.verticalDirection = -1;
+        }
+    }
+
+    randomlyPause() {
+        if (!this.movementPause && Math.random() < 0.01) {
+            this.movementPause = true;
+            
+            setTimeout(() => {
+                this.movementPause = false;
+            }, this.pauseDuration);
+        }
+    }
+
+    checkDirectionChange() {
+        const currentTime = new Date().getTime();
+        if (currentTime - this.lastDirectionChange > this.directionChangeInterval) {
+            if (Math.random() > 0.3) {
+                this.verticalDirection *= -1;
+            }
+            this.lastDirectionChange = currentTime;
+        }
+    }
+
     startAttackInterval() {
         setInterval(() => {
-            if (!this.isDead() && !this.isHurt()) {
-                this.attack();
+            if (!this.isDead() && !this.isHurt() && !this.movementPause) {
+                const distanceToPlayer = Math.abs(this.x - this.world?.character?.x);
+                
+                if (distanceToPlayer < 300 && Math.random() < 0.3) {
+                    this.startComboAttack();
+                } else {
+                    this.attack();
+                }
             }
         }, this.attackCooldown);
     }
 
+    startComboAttack() {
+        if (this.comboAttackActive) return;
+        
+        this.comboAttackActive = true;
+        this.speed *= 1.5; 
+        this.attack();
+        
+        setTimeout(() => {
+            if (!this.isDead() && !this.isHurt()) {
+                this.attack();
+            }
+    
+            setTimeout(() => {
+                this.comboAttackActive = false;
+                this.speed = 2; 
+            }, 1000);
+        }, 700);  
+    }
+
     attack() {
+        if (this.movementPause || this.isAttacking) return;
+        
         this.isAttacking = true;
+        
+        const attackDuration = this.comboAttackActive ? 600 : 1000;
+        
         setTimeout(() => {
             this.isAttacking = false;
-        }, 1000); 
+        }, attackDuration);
     }
 
     startDeadFloating() {
@@ -190,12 +285,18 @@ class Endboss extends MovableObject{
 
     hit() {
         this.hitCount++;
-        this.energy -= 33.33; 
+        this.energy -= 20;  
+        
+        if (this.energy < 0) {
+            this.energy = 0;
+        }
+        
+        this.world.endbossStatusBar.setPercentage(this.energy);
         this.lastHit = new Date().getTime();
     }
 
     isDead() {
-        return this.hitCount >= 3;
+        return this.hitCount >= this.maxHits; 
     }
 
 }

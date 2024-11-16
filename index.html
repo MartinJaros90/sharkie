@@ -8,33 +8,50 @@
     <title>Sharkie</title>
     <link rel="icon" type="image/x-icon" href="./img/1.Sharkie/1.IDLE/1.png">
 
+    <!-- Basis-Klassen -->
     <script src="./models/drawable-objects.class.js"></script>
     <script src="./models/movable-object.class.js"></script>
-    <script src="./models/character.class.js"></script>
+    <script src="./models/keyboard.class.js"></script>
+    <script src="./models/level.class.js"></script>
+
+    <!-- Audio Manager -->
     <script src="./models/audio-manager.class.js"></script>
 
+    <!-- Charakter und Gegner-Basis -->
+    <script src="./models/character.class.js"></script>
     <script src="./models/enemy.class.js"></script>
+
+    <!-- Gegner-Typen -->
     <script src="./models/enemyJelly.class.js"></script>
     <script src="./models/enemyPink.class.js"></script>
     <script src="./models/enemyYellow.class.js"></script>
     <script src="./models/enemyBubble.class.js"></script>
+    <script src="./models/endboss.class.js"></script>
 
+    <!-- Sammelbare Objekte -->
     <script src="./models/posion.class.js"></script>
     <script src="./models/lighter.class.js"></script>
     <script src="./models/coins.class.js"></script>
 
+    <!-- throwable objects -->
+    <script src="./models/normal-bubble.class.js"></script>
+    <script src="./models/poison-bubble.class.js"></script>
+
+    <!-- UI-Elemente -->
     <script src="./models/status-bar.class.js"></script>
     <script src="./models/coin-bar.class.js"></script>
     <script src="./models/poison-bar.class.js"></script>
-    <script src="./models/world.class.js"></script>
-    <script src="./models/background-object.class.js"></script>
-    <script src="./models/keyboard.class.js"></script>
-    <script src="./models/level.class.js"></script>
-    <script src="./models/endboss.class.js"></script>
+    <script src="./models/cooldown-display.class.js"></script>
+    <script src="./models/endboss-status-bar.class.js"></script>
 
-    <script src="./models/normal-bubble.class.js"></script>
-    <script src="./models/poison-bubble.class.js"></script>
+    <!-- Hintergrund -->
+    <script src="./models/background-object.class.js"></script>
+
+    <!-- Level-Daten -->
     <script src="./levels/level1.js"></script>
+
+    <!-- World und Game zuletzt -->
+    <script src="./models/world.class.js"></script>
     <script src="./js/game.js"></script>
 </head>
 
@@ -42,6 +59,18 @@
 
     <h1>Sharkie</h1>
     <canvas id="canvas" width="720" height="480"></canvas>
+
+    <div id="start-screen" class="start-screen">
+        <div class="sound-btn-container">
+            <button class="sound-btn muted" onclick="toggleSound()">
+                <img src="img/6.Botones/mute.png" alt="Sound Toggle" id="soundIcon">
+            </button>
+        </div>
+        <div class="btns-container">
+            <button class="btn start-btn">Start</button>
+            <button class="btn">Instructions</button>
+        </div>
+    </div>
 
 </body>
 

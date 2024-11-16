@@ -1,16 +1,29 @@
 let canvas;
 let world;
 let keyboard = new Keyboard();
+let isMuted = true;
 
 function init() {
     canvas = document.getElementById('canvas');
     world = new World(canvas, keyboard);
-
-
-    console.log('My character is', world.character);
-    
 }
 
+
+function toggleSound() {
+    isMuted = !isMuted;
+    const soundBtn = document.querySelector('.sound-btn');
+    const soundIcon = document.getElementById('soundIcon');
+    
+    if (isMuted) {
+        soundBtn.classList.add('muted');
+        AudioManager.muteAll();
+        soundIcon.src = 'img/6.Botones/mute.png'; 
+    } else {
+        soundBtn.classList.remove('muted');
+        AudioManager.unmuteAll();
+        soundIcon.src = 'img/6.Botones/sound.png';
+    }
+}
 
 window.addEventListener("keydown", (e) => {
     if (e.keyCode ==  39) {

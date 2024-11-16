@@ -13,6 +13,8 @@ class World {
     statusBar = new StatusBar();
     coinBar = new CoinBar();
     poisonBar = new PoisonBar();
+    endbossStatusBar = new EndbossStatusBar();
+    cooldownDisplay = new CooldownDisplay();
     throwableObject = [];
     collectedPoisons = 0;
     coins = [];
@@ -24,30 +26,27 @@ class World {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
+        this.character = new Character();
         this.level = level1;
         this.coins = this.level.light.filter(obj => obj instanceof Coin);
         this.poisons = this.level.light.filter(obj => obj instanceof Posion);
-        this.draw();
         this.setWorld();
+        this.draw();
         AudioManager.init();
-        this.run();
-
-        document.addEventListener('click', () => {
-            AudioManager.startBackgroundMusic();
-        }, { once: true });  // 'once: true' bedeutet, der Event Listener wird nach einmaligem Ausführen entfernt
-        
         this.run();
     
     }
 
 
     setWorld() {
-    this.character.world = this;
-    this.level.enemies.forEach(enemy => {
-        if (enemy instanceof Endboss) {
-            enemy.world = this;
-        }
-    });
+        this.character.world = this;
+        this.cooldownDisplay.setWorld(this);
+        this.level.enemies.forEach(enemy => {
+            if (enemy instanceof Endboss) {
+                enemy.world = this;
+            }
+        });
+        this.character.initializeCharacter(); 
 }
 
 run() {
@@ -58,8 +57,6 @@ run() {
         this.checkCharacterPoisonCollision();
         this.checkSpaceThrow();
         this.checkBubbleEnemyCollision();
-        
-        // Boss-Intro-Check über den Endboss selbst
         this.level.enemies.forEach(enemy => {
             if (enemy instanceof Endboss) {
                 enemy.checkBossIntro(this.character.x);
@@ -80,7 +77,7 @@ checkThrowObjects() {
 
     
 checkSpaceThrow() {
-    if (this.keyboard.SPACE && !this.character.throwAnimationInterval) {
+    if (this.keyboard.SPACE && !this.character.throwAnimationInterval && this.character.canThrow) {
         this.character.startThrowAnimation(() => {
             let bubble;
             
@@ -174,19 +171,20 @@ checkCharacterCoinCollision() {
 }
 
 
-    checkCharacterPoisonCollision() {
-        this.poisons.forEach((poison) => {
-            if (!poison.isCollected && this.character.isColliding(poison)) {
-                poison.collect();
-                this.poisonBar.poisonCollected();
-                
-                this.collectedPoisons++;
-                this.remainingPoisonBubbles++;
-                
-                poison.isCollected = true;
-            }
-        });
-    }
+checkCharacterPoisonCollision() {
+    this.poisons.forEach((poison) => {
+        if (!poison.isCollected && this.character.isColliding(poison)) {
+            poison.collect();
+            this.poisonBar.poisonCollected();
+            
+            this.collectedPoisons++;
+            this.remainingPoisonBubbles++;
+            
+            poison.isCollected = true;
+            AudioManager.play('poison');  // Hier wird der Poison-Sound abgespielt
+        }
+    });
+}
     
 // checkBubbleEnemyCollision() {
 //     this.throwableObject.forEach((bubble, bubbleIndex) => {
@@ -264,6 +262,10 @@ startKnockbackAnimation(enemy) {
         this.addToMap(this.statusBar);
         this.addToMap(this.coinBar);
         this.addToMap(this.poisonBar);
+        if (this.endbossStatusBar.visible) {  // Nur zeichnen wenn visible true ist
+            this.addToMap(this.endbossStatusBar);
+        }
+        this.cooldownDisplay.draw(this.ctx);
         this.ctx.translate(this.camera_x, 0);
 
 
