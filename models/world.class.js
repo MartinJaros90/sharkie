@@ -5,7 +5,6 @@ class World {
     canvasWidth = 720;  
     canvasHeight = 480;
 
-    level = level1;
     canvas;
     ctx;
     keyboard;
@@ -19,6 +18,9 @@ class World {
     collectedPoisons = 0;
     coins = [];
     remainingPoisonBubbles = 0;
+    gameIsRunning = false;
+    level; // Neue Variable für das Level
+    
     
 
 
@@ -27,14 +29,20 @@ class World {
         this.canvas = canvas;
         this.keyboard = keyboard;
         this.character = new Character();
-        this.level = level1;
+        // Nur Hintergrund initialisieren
+        this.level = new Level([], [], createBackground());
+        this.setWorld();
+        AudioManager.init();
+        this.draw(); // Startet den Render-Loop
+    }
+
+    startGame() {
+        this.gameIsRunning = true;
+        this.level = initLevel(); // Vollständiges Level laden
         this.coins = this.level.light.filter(obj => obj instanceof Coin);
         this.poisons = this.level.light.filter(obj => obj instanceof Posion);
         this.setWorld();
-        this.draw();
-        AudioManager.init();
         this.run();
-    
     }
 
 
@@ -50,18 +58,22 @@ class World {
 }
 
 run() {
+    if (!this.gameIsRunning) return;
+    
     setInterval(() => {
-        this.checkCollisions();
-        this.checkThrowObjects();
-        this.checkCharacterCoinCollision();
-        this.checkCharacterPoisonCollision();
-        this.checkSpaceThrow();
-        this.checkBubbleEnemyCollision();
-        this.level.enemies.forEach(enemy => {
-            if (enemy instanceof Endboss) {
-                enemy.checkBossIntro(this.character.x);
-            }
-        });
+        if (this.gameIsRunning) {
+            this.checkCollisions();
+            this.checkThrowObjects();
+            this.checkCharacterCoinCollision();
+            this.checkCharacterPoisonCollision();
+            this.checkSpaceThrow();
+            this.checkBubbleEnemyCollision();
+            this.level.enemies.forEach(enemy => {
+                if (enemy instanceof Endboss) {
+                    enemy.checkBossIntro(this.character.x);
+                }
+            });
+        }
     }, 200);
 }
 
@@ -75,19 +87,19 @@ checkThrowObjects() {
     }
 }  
 
-    
 checkSpaceThrow() {
     if (this.keyboard.SPACE && !this.character.throwAnimationInterval && this.character.canThrow) {
         this.character.startThrowAnimation(() => {
             let bubble;
+            const isMovingLeft = this.character.otherDirection;  // Richtung des Characters
             
             if (this.remainingPoisonBubbles > 0) {
-                bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
+                bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100, isMovingLeft);
                 this.remainingPoisonBubbles--;
                 this.poisonBar.poisonThrown();
                 AudioManager.play('bubble');  
             } else {
-                bubble = new NormalBubble(this.character.x + 100, this.character.y + 100);
+                bubble = new NormalBubble(this.character.x + 100, this.character.y + 100, isMovingLeft);
                 AudioManager.play('bubble'); 
             }
 
@@ -250,39 +262,34 @@ startKnockbackAnimation(enemy) {
 
 
 
-    draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.ctx.translate(this.camera_x, 0);
-        this.addObjectsToMap(this.level.backgroundObjects);
+    // Hintergrund immer zeichnen
+    this.ctx.translate(this.camera_x, 0);
+    this.addObjectsToMap(this.level.backgroundObjects);
+    this.ctx.translate(-this.camera_x, 0);
 
-
-        this.ctx.translate(-this.camera_x, 0);
-        // ----- Space for fixed  objects -----//
+    if (this.gameIsRunning) {  // Nur wenn das Spiel läuft
+        // ----- Space for fixed objects -----//
         this.addToMap(this.statusBar);
         this.addToMap(this.coinBar);
         this.addToMap(this.poisonBar);
-        if (this.endbossStatusBar.visible) {  // Nur zeichnen wenn visible true ist
+        if (this.endbossStatusBar.visible) {
             this.addToMap(this.endbossStatusBar);
         }
         this.cooldownDisplay.draw(this.ctx);
+        
         this.ctx.translate(this.camera_x, 0);
-
-
         this.addToMap(this.character);
         this.addObjectsToMap(this.level.enemies);
         this.addObjectsToMap(this.level.light);
         this.addObjectsToMap(this.throwableObject);
-
         this.ctx.translate(-this.camera_x, 0);
-
-
-        //draw() wird immer wieder aufgerufen
-        self = this;
-        requestAnimationFrame(function(){
-            self.draw();
-        });
     }
+
+    requestAnimationFrame(() => this.draw());
+}
 
     addObjectsToMap(objects){
         objects.forEach(o => {

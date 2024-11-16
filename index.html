@@ -58,7 +58,7 @@
 <body onload="init()">
 
     <h1>Sharkie</h1>
-    <canvas id="canvas" width="720" height="480"></canvas>
+    <canvas id="canvas" width="720" height="480" style="display: none;"></canvas>
 
     <div id="start-screen" class="start-screen">
         <div class="sound-btn-container">
@@ -69,7 +69,7 @@
         
         <!-- Main Menu Buttons -->
         <div class="btns-container" id="main-menu">
-            <button class="btn start-btn">Start</button>
+            <button class="btn start-btn" onclick="startGame()">Start</button>
             <button class="btn" onclick="showInstructions()">Instructions</button>
         </div>
     
@@ -91,6 +91,16 @@
                 </div>
             </div>
             <button class="btn back-btn" onclick="hideInstructions()">Back</button>
+        </div>
+    </div>
+
+    <div id="loading-screen" style="display: none;">
+        <div class="loading-content">
+            <img src="img/1.Sharkie/1.IDLE/1.png" class="loading-sharkie">
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+            </div>
+            <div class="loading-text">Loading...</div>
         </div>
     </div>
 

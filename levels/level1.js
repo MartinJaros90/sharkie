@@ -1,8 +1,13 @@
-const level1 = new Level(
-    createEnemies(),
-    createCollectibles(),
-    createBackground()
-);
+let level1; // Globale Variable für das Level
+
+function initLevel() {
+    level1 = new Level(
+        createEnemies(),
+        createCollectibles(),
+        createBackground()
+    );
+    return level1;
+}
 
 function createEnemies() {
     let enemies = [];

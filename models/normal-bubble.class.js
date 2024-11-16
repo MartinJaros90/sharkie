@@ -31,14 +31,14 @@
 
 
 class NormalBubble extends MovableObject {
-    constructor(x, y) {
+    constructor(x, y, isMovingLeft) {
         super().loadImage('img/1.Sharkie/4.Attack/Bubble trap/Bubble.png');
         this.x = x;
         this.y = y;
         this.startX = x;
         this.maxDistance = 400;
         this.verticalSpeed = -2;
-        this.horizontalSpeed = 10;
+        this.horizontalSpeed = isMovingLeft ? -10 : 10;
         this.swingAmplitude = 2;
         this.swingFrequency = 0.1;
         this.height = 70;

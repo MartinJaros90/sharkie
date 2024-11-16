@@ -11,10 +11,13 @@ body{
     margin: 0;
 }
 
-canvas{
+canvas, .start-screen {
     background-color: black;
     display: block;
+    width: 720px;
+    height: 480px;
 }
+
 
 h1{
     font-size: 88px;
@@ -29,9 +32,11 @@ h1{
 }
 
 /* Smartphones ------------------*/
-@media only screen and (max-width: 720px){
-    canvas {
+@media only screen and (max-width: 720px) {
+    canvas, .start-screen {
         width: 100%;
+        height: auto;
+        aspect-ratio: 3/2;
     }
 }
 
@@ -40,6 +45,10 @@ h1{
     canvas {
         height: 100vh;
     }
+}
+
+.start-screen, canvas {
+    transition: opacity 0.5s ease-in-out;
 }
 
 .start-screen {
@@ -235,20 +244,18 @@ h1{
     align-items: center;
     justify-content: center;
     gap: 40px;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 32px;
-    width: 440px;      
-    height: 320px;       
-    margin: auto;          
-    border-radius: 15px;  
-    border: 3px solid rgba(127, 255, 224, 0.6);
-
     background: linear-gradient(
         135deg,
         rgba(0, 0, 0, 0.9) 0%,
         rgba(0, 20, 40, 0.8) 100%
     );
     backdrop-filter: blur(5px);
+    padding: 32px;
+    width: 440px;      
+    height: 320px;       
+    margin: auto;          
+    border-radius: 15px;  
+    border: 3px solid rgba(127, 255, 224, 0.6);
     box-shadow: 0 0 30px rgba(127, 255, 224, 0.2);
 }
 
@@ -298,4 +305,89 @@ h1{
 
 .instructions-container {
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive Anpassungen für Instructions */
+@media only screen and (max-width: 720px) {
+    .instructions-container {
+        width: 90%;    /* Relative Breite statt fixer Breite */
+        height: auto;  /* Höhe passt sich an Inhalt an */
+        padding: 20px; /* Kleinerer Padding auf kleinen Screens */
+        gap: 20px;     /* Kleinerer Abstand zwischen Elementen */
+    }
+
+    .instruction-row {
+        flex-direction: column; /* Stapelt Elemente bei sehr kleinen Screens */
+        align-items: center;
+        gap: 15px;
+    }
+
+    .instruction-item {
+        gap: 15px;    /* Kleinerer Abstand */
+    }
+
+    .key-img {
+        height: 35px; /* Kleinere Bilder */
+    }
+
+    .title-img {
+        height: 25px; /* Kleinere Titel */
+    }
+
+    .attack-keys {
+        gap: 8px;     /* Kleinerer Abstand zwischen Attack-Keys */
+    }
+
+    .back-btn {
+        margin-top: 20px;
+        padding: 8px 16px;  /* Kleinerer Button */
+        font-size: 16px;
+    }
+}
+
+/* Noch kleinere Screens */
+@media only screen and (max-width: 480px) {
+    .instructions-container {
+        width: 95%;
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .key-img {
+        height: 30px;
+    }
+
+    .title-img {
+        height: 20px;
+    }
+}
+
+/* Landscape Mode (Querformat) */
+@media only screen and (max-height: 480px) {
+    .instructions-container {
+        flex-direction: row; 
+        height: 80%;
+        gap: 20px;
+        padding: 15px;
+    }
+
+    .instruction-row {
+        margin: 0;
+    }
+
+    .back-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+    }
+}
+
+@keyframes loading {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
