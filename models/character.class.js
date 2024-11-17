@@ -129,12 +129,18 @@ class Character extends MovableObject {
         this.animationManager.playLongIdleAnimation();
     }
 
+    /**
+     * Initializes character animation if world is set
+     */
     initializeCharacter() {
         if (this.world) {
             this.animate();
         }
     }
 
+    /**
+     * Main animation loop handling movement, attacks and idle animations
+     */
     animate() {
         if (!this.world) return;  
     
@@ -217,6 +223,9 @@ class Character extends MovableObject {
         this.animationManager.playDeathAnimation();
     }
     
+    /**
+     * Shows game over screen when character dies
+     */
     showGameOverScreen() {
         if (!this.gameOver) {
             this.gameOver = new GameOver(this.world);
@@ -249,6 +258,9 @@ class Character extends MovableObject {
         this.playAnimation(this.IMAGES_IDLE);
     }
 
+/**
+ * Handles the slap attack mechanic
+ */
 slapAttack() {
     if (!this.canPerformSlap()) return;
     
@@ -256,10 +268,17 @@ slapAttack() {
     this.startSlapAnimation();
 }
 
+/**
+ * Checks if character can perform a slap attack
+ * @returns {boolean} Whether the character can slap
+ */
 canPerformSlap() {
     return this.canSlap && !this.slapAnimationInterval;
 }
 
+/**
+ * Initializes slap attack properties and plays sound
+ */
 initializeSlap() {
     this.canSlap = false;
     this.currentImage = 0;
@@ -273,6 +292,9 @@ startSlapAnimation() {
     this.animationManager.startSlapAnimation();
 }
 
+/**
+ * Updates character width during slap animation
+ */
 updateSlapWidth() {
     if (this.currentImage < this.IMAGES_SLAP.length / 2) {
         this.width = this.originalWidth * 1.15;
@@ -285,6 +307,10 @@ updateSlapAnimation() {
     this.animationManager.updateSlapAnimation();
 }
 
+/**
+ * Checks for collision with enemies during slap attack
+ * @param {boolean} slapHitRegistered - Whether a hit has already been registered
+ */
 checkSlapHit(slapHitRegistered) {
     if (this.isInSlapHitFrames() && !slapHitRegistered) {
         this.world.level.enemies.forEach(enemy => {
@@ -304,6 +330,10 @@ canHitEnemy(enemy, slapHitRegistered) {
     return this.isWithinExtendedRange(enemy, 20) && !slapHitRegistered;
 }
 
+/**
+ * Handles what happens when an enemy is hit
+ * @param {Enemy} enemy - The enemy that was hit
+ */
 handleEnemyHit(enemy) {
     AudioManager.play('slap');
     if (enemy instanceof Endboss) {
@@ -346,6 +376,12 @@ startSlapCooldownDisplay() {
     }, 1000);
 }
 
+/**
+ * Checks if target is within attack range
+ * @param {MovableObject} enemy - The target to check
+ * @param {number} range - The attack range to check
+ * @returns {boolean} Whether target is in range
+ */
 isWithinExtendedRange(enemy, range) {
     if (enemy.isTrappedInBubble) {
         return false;
@@ -370,6 +406,9 @@ checkElectroShock(enemy) {
     return enemy instanceof EnemyJelly || enemy instanceof EnemyYellow;
 }
 
+/**
+ * Handles electrocution effect from jellyfish
+ */
 receiveElectroShock() {
     if (!this.isElectrocuted) {
         this.isElectrocuted = true;

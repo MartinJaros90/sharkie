@@ -6,6 +6,9 @@ class MovableObject extends DrawableObject{
     acceleration = 2.5;
     isHurtPlaying = false;
 
+    /**
+     * Applies gravity effect to the object
+     */
     applyGravity() {
         setInterval(() => {
             if (this.isAboveGround() || this.speedY > 0) {
@@ -15,6 +18,10 @@ class MovableObject extends DrawableObject{
         }, 1000/25);
     }
 
+    /**
+     * Checks if object is above ground level
+     * @returns {boolean} True if object is above ground or is a ThrowableObject
+     */
     isAboveGround() {
         if (this instanceof ThrowableObject) { 
             return true;
@@ -24,6 +31,10 @@ class MovableObject extends DrawableObject{
         
     }
 
+    /**
+    * Plays animation sequence from provided image array
+    * @param {string[]} images - Array of image paths
+    */
     playAnimation(images){
         let i = this.currentImage % images.length;
         let path = images[i];
@@ -31,7 +42,11 @@ class MovableObject extends DrawableObject{
         this.currentImage++;
     }
 
-
+    /**
+     * Checks for collision with another movable object
+     * @param {MovableObject} mo - The other movable object
+     * @returns {boolean} True if objects are colliding
+     */
     isColliding(mo) {
         if (mo.isTrappedInBubble) {
             return false;
@@ -70,7 +85,9 @@ class MovableObject extends DrawableObject{
         }
     }
 
-
+    /**
+     * Reduces object's energy when hit
+     */
     hit() {
         this.energy -= 20; 
         if (this.energy < 0) {
@@ -80,7 +97,11 @@ class MovableObject extends DrawableObject{
         }
     }
 
-
+    /**
+     * Simplified collision check without complex offsets
+     * @param {MovableObject} otherObject - The object to check collision with
+     * @returns {boolean} True if objects are colliding
+     */
     hasSimpleCollisionWith(otherObject) {
         if (otherObject instanceof Endboss) {
             let bossOffsetX = 100;
@@ -107,10 +128,9 @@ class MovableObject extends DrawableObject{
         }
     }
 
-
-    
-
-
+/**
+ * Plays hurt animation sequence
+ */
 playHurtAnimation() {
     if (this.isHurtPlaying) return;
     this.isHurtPlaying = true;
@@ -134,12 +154,20 @@ playHurtAnimation() {
     }, 150);
 } 
 
+/**
+ * Checks if object is currently in hurt state
+ * @returns {boolean} True if object was hit less than 1 second ago
+ */
 isHurt() {
     let timepassed = new Date().getTime() - this.lastHit;
     timepassed = timepassed / 1000;
     return timepassed < 1; 
 }
 
+    /**
+     * Checks if object is dead
+     * @returns {boolean} True if energy is 0
+     */
     isDead() {
         return this.energy == 0;
     }

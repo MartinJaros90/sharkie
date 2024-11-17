@@ -37,16 +37,10 @@ class NormalBubble extends MovableObject {
     }
 
     captureEnemy(enemy) {
-        if (!this.enemyCaptured) { 
-            this.enemyCaptured = enemy;
-            enemy.isTrappedInBubble = true;
-            enemy.energy = 0; // Optional: Setze die Energie auf 0
-            clearInterval(enemy.movementInterval);
-            
-            // Deaktiviere alle Kollisionen und Animationen des Gegners
-            if (enemy.clearAllAnimations) {
-                enemy.clearAllAnimations();
-            }
-        }
+    if (!this.enemyCaptured) { 
+        this.enemyCaptured = enemy;
+        enemy.isTrappedInBubble = true;
+        clearInterval(enemy.movementInterval);
     }
+}
 }

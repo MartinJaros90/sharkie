@@ -21,25 +21,21 @@ class MobileControls {
             return;
         }
     
-        // touchstart Event - Button gedrückt
         button.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.keyboard[key] = true;
         });
-        
-        // touchend Event - Button losgelassen
+
         button.addEventListener('touchend', (e) => {
             e.preventDefault();
             this.keyboard[key] = false;
         });
 
-        // touchcancel Event - Touch wurde abgebrochen
         button.addEventListener('touchcancel', (e) => {
             e.preventDefault();
             this.keyboard[key] = false;
         });
-        
-        // Verhindere das Scrollen während des Touches
+
         button.addEventListener('touchmove', (e) => {
             e.preventDefault();
         });

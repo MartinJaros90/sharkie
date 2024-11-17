@@ -95,12 +95,20 @@ class Endboss extends MovableObject{
         this.startAttackInterval();
     }
 
+    /**
+     * Draws the boss only if visible
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context
+     */
     draw(ctx) {
         if (this.visible) { 
             super.draw(ctx);
         }
     }
 
+    
+    /**
+     * Handles all animation states of the boss
+     */
     animate() {
         let i = 0;
         setInterval(() => {
@@ -147,6 +155,10 @@ class Endboss extends MovableObject{
         }, 150); 
     }
 
+    /**
+     * Checks if boss intro should be triggered based on character position
+     * @param {number} characterX - The x position of the character
+     */
     checkBossIntro(characterX) {
         if (characterX > 2000 && !this.hadFirstContact) {
             this.hadFirstContact = true;
@@ -171,6 +183,9 @@ class Endboss extends MovableObject{
         }, 200);
     }
 
+    /**
+     * Initiates the boss's movement patterns
+     */
     startMoving() {
         setInterval(() => {
             if (!this.isDead() && !this.isHurt() && this.introduceFinished && this.hadFirstContact) {
@@ -184,6 +199,9 @@ class Endboss extends MovableObject{
         }, 1000 / 60);
     }
 
+    /**
+     * Handles horizontal movement towards the player
+     */
     moveHorizontally() {
         if (this.world?.character) {
             if (this.x > this.world.character.x) {
@@ -192,6 +210,9 @@ class Endboss extends MovableObject{
         }
     }
 
+    /**
+     * Handles vertical movement within boundaries
+     */
     moveVertically() {
         this.y += this.verticalSpeed * this.verticalDirection;
         
@@ -207,6 +228,9 @@ class Endboss extends MovableObject{
         }
     }
 
+    /**
+     * Initiates random pause in movement
+     */
     randomlyPause() {
         if (!this.movementPause && Math.random() < 0.01) {
             this.movementPause = true;
@@ -227,6 +251,9 @@ class Endboss extends MovableObject{
         }
     }
 
+    /**
+     * Starts the attack interval for regular and combo attacks
+     */
     startAttackInterval() {
         setInterval(() => {
             if (!this.isDead() && !this.isHurt() && !this.movementPause) {
@@ -241,6 +268,9 @@ class Endboss extends MovableObject{
         }, this.attackCooldown);
     }
 
+    /**
+     * Initiates a combo attack sequence
+     */
     startComboAttack() {
         if (this.comboAttackActive) return;
         
@@ -260,6 +290,9 @@ class Endboss extends MovableObject{
         }, 700);  
     }
 
+    /**
+     * Performs a single attack
+     */
     attack() {
         if (this.movementPause || this.isAttacking) return;
         
@@ -280,6 +313,9 @@ class Endboss extends MovableObject{
         }, 1000 / 60);  
     }
 
+    /**
+     * Handles boss taking damage
+     */
     hit() {
         this.hitCount++;
         this.energy -= 20;  
@@ -296,6 +332,9 @@ class Endboss extends MovableObject{
         }
     }
 
+    /**
+     * Initiates victory sequence when boss is defeated
+     */
     startVictorySequence() {
         AudioManager.stopAll();
         hideMobileControls();
@@ -305,6 +344,9 @@ class Endboss extends MovableObject{
         }, 2000);
     }
 
+    /**
+     * Displays victory screen with animations
+     */
     showVictoryScreen() {
         this.world.gameIsRunning = false;
         let ctx = this.world.ctx;
@@ -354,11 +396,25 @@ class Endboss extends MovableObject{
         animate();
     }
     
+    /**
+     * Draws victory screen effects
+     * @param {CanvasRenderingContext2D} ctx - The canvas context
+     * @param {HTMLCanvasElement} canvas - The canvas element
+     * @param {number} alpha - The opacity value
+     * @param {number} [time=0] - The animation time
+     */
     drawVictoryEffects(ctx, canvas, alpha, time = 0) {
         this.drawStars(ctx, canvas, alpha, time);
         this.drawVictoryText(ctx, canvas, alpha);
     }
     
+    /**
+     * Draws animated stars effect
+     * @param {CanvasRenderingContext2D} ctx - The canvas context
+     * @param {HTMLCanvasElement} canvas - The canvas element
+     * @param {number} alpha - The opacity value
+     * @param {number} [time=0] - The animation time
+     */
     drawStars(ctx, canvas, alpha, time = 0) {
         for (let i = 0; i < 100; i++) {
             let x = Math.random() * canvas.width;

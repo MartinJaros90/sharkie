@@ -6,6 +6,9 @@ class GameOver {
         this.ctx = world.ctx;
     }
 
+    /**
+     * Shows the game over screen and disables mobile controls if necessary
+     */
     show() {
         this.world.gameIsRunning = false;
         
@@ -16,6 +19,9 @@ class GameOver {
         this.setup();
     }
     
+    /**
+     * Sets up the game over screen with image and event handlers
+     */
     setup() {
         let gameOverImage = new Image();
         gameOverImage.src = 'img/6.Botones/Tittles/Game Over/Recurso 12.png';
@@ -31,6 +37,12 @@ class GameOver {
         }
     }
     
+    /**
+     * Creates event handlers for mouse and keyboard interactions
+     * @param {HTMLImageElement} gameOverImage - The game over screen image
+     * @param {boolean} isHovered - Current hover state
+     * @returns {Object} Object containing event handler functions
+     */
     createEventHandlers(gameOverImage, isHovered) {
         let handleClick = (event) => {
             if (this.isButtonClicked(event, gameOverImage)) {
@@ -53,12 +65,19 @@ class GameOver {
         return { handleClick, handleMouseMove, handleKeydown };
     }
     
+    /**
+     * Adds event listeners for user interactions
+     * @param {Object} handlers - Object containing event handler functions
+     */
     addEventListeners({ handleClick, handleMouseMove, handleKeydown }) {
         this.canvas.addEventListener('mousemove', handleMouseMove);
         this.canvas.addEventListener('click', handleClick);
         document.addEventListener('keydown', handleKeydown);
     }
     
+    /**
+     * Restarts the game and cleans up event listeners
+     */
     restartGame() {
         let { handleClick, handleMouseMove, handleKeydown } = this.handlers;
         this.canvas.removeEventListener('mousemove', handleMouseMove);
@@ -72,6 +91,12 @@ class GameOver {
         location.reload();
     }
     
+    /**
+     * Checks if the restart button was clicked
+     * @param {MouseEvent} event - The mouse event
+     * @param {HTMLImageElement} gameOverImage - The game over screen image
+     * @returns {boolean} Whether the button was clicked
+     */
     isButtonClicked(event, gameOverImage) {
         let { x, y } = this.getMousePosition(event);
         let buttonDimensions = this.getButtonDimensions(gameOverImage);
@@ -84,6 +109,11 @@ class GameOver {
         return this.isPointInButton(x, y, buttonDimensions);
     }
     
+    /**
+     * Gets the current mouse position relative to canvas
+     * @param {MouseEvent} event - The mouse event
+     * @returns {Object} Object containing x and y coordinates
+     */
     getMousePosition(event) {
         let rect = this.canvas.getBoundingClientRect();
         return {
@@ -92,6 +122,11 @@ class GameOver {
         };
     }
     
+    /**
+     * Calculates button dimensions based on canvas size
+     * @param {HTMLImageElement} gameOverImage - The game over screen image
+     * @returns {Object} Object containing button dimensions and position
+     */
     getButtonDimensions(gameOverImage) {
         let buttonWidth = 200;
         let buttonHeight = 50;
@@ -106,6 +141,11 @@ class GameOver {
                y >= buttonY && y <= buttonY + buttonHeight;
     }
     
+    /**
+     * Renders the game over screen
+     * @param {HTMLImageElement} gameOverImage - The game over screen image
+     * @param {boolean} isHovered - Current hover state
+     */
     render(gameOverImage, isHovered) {
         this.drawBackground();
         
@@ -119,6 +159,9 @@ class GameOver {
         }
     }
     
+    /**
+     * Draws the semi-transparent background
+     */
     drawBackground() {
         this.ctx.save();
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -126,6 +169,10 @@ class GameOver {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
     
+    /**
+     * Draws the game over image
+     * @param {HTMLImageElement} gameOverImage - The game over screen image
+     */
     drawGameOverImage(gameOverImage) {
         let imgWidth = this.canvas.width * 0.6;
         let imgHeight = (imgWidth * gameOverImage.height) / gameOverImage.width;
@@ -134,6 +181,11 @@ class GameOver {
         this.ctx.drawImage(gameOverImage, x, y, imgWidth, imgHeight);
     }
     
+    /**
+     * Draws the restart button with all its effects
+     * @param {HTMLImageElement} gameOverImage - The game over screen image
+     * @param {boolean} isHovered - Current hover state
+     */
     drawButton(gameOverImage, isHovered) {
         let dimensions = this.getButtonDimensions(gameOverImage);
         
@@ -149,6 +201,11 @@ class GameOver {
         this.ctx.restore();
     }
     
+    /**
+     * Draws the button background with hover effects
+     * @param {Object} dimensions - Button dimensions and position
+     * @param {boolean} isHovered - Current hover state
+     */
     drawButtonBackground({ buttonX, buttonY, buttonWidth, buttonHeight }, isHovered) {
         this.ctx.beginPath();
         this.ctx.roundRect(buttonX, buttonY, buttonWidth, buttonHeight, 25);
@@ -184,6 +241,10 @@ class GameOver {
         this.ctx.fillText('TRY AGAIN', this.canvas.width / 2, isHovered ? textY - 3 : textY);
     }
     
+    /**
+     * Draws the button's hover effect gradient
+     * @param {Object} dimensions - Button dimensions and position
+     */
     drawButtonHoverEffect({ buttonX, buttonY, buttonWidth, buttonHeight }) {
         let gradient = this.ctx.createLinearGradient(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight);
         gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');

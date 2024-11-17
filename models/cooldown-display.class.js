@@ -1,3 +1,7 @@
+/**
+ * Represents the cooldown display for character abilities
+ * @extends DrawableObject
+ */
 class CooldownDisplay extends DrawableObject {
     x = 360;
     y = 100;
@@ -8,10 +12,18 @@ class CooldownDisplay extends DrawableObject {
         super();
     }
 
+    /**
+     * Sets the game world reference
+     * @param {World} world - The game world instance
+     */
     setWorld(world) {
         this.world = world;
     }
 
+    /**
+     * Draws the cooldown text on the canvas
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context
+     */
     draw(ctx) {
         if (this.world && this.world.character && this.world.character.cooldownDisplay) {
             ctx.font = `${this.fontSize}px 'luckiest-guy'`;

@@ -1,4 +1,8 @@
 class CharacterAnimationManager {
+
+    /**
+     * @param {Character} character - The character instance to manage animations for
+     */
     constructor(character) {
         this.character = character;
         this.idleInterval = null;
@@ -8,6 +12,10 @@ class CharacterAnimationManager {
         this.slapAnimationInterval = null;
     }
 
+    /**
+     * Plays the long idle animation by clearing other idle animations
+     * and starting a new interval
+     */
     playLongIdleAnimation() {
         clearInterval(this.idleInterval);
         clearInterval(this.longIdleInterval);
@@ -17,6 +25,9 @@ class CharacterAnimationManager {
         }, 500);
     }
 
+    /**
+     * Clears all active animations and their intervals/timeouts
+     */
     clearAllAnimations() {
         clearInterval(this.idleInterval);
         clearInterval(this.longIdleInterval);
@@ -30,6 +41,10 @@ class CharacterAnimationManager {
         this.throwAnimationInterval = null;
     }
 
+    /**
+     * Plays the death animation sequence and shows game over screen
+     * after completion
+     */
     playDeathAnimation() {
         let currentFrame = 0;
         let frameCount = this.character.IMAGES_DEAD.length;
@@ -63,6 +78,10 @@ class CharacterAnimationManager {
         this.longIdleTimeout = null;
     }
 
+    /**
+     * Manages idle animations by starting both regular idle
+     * and long idle timer if not already running
+     */
     handleIdleAnimations() {
         if (!this.idleInterval) {
             this.startIdleAnimation();
@@ -72,18 +91,30 @@ class CharacterAnimationManager {
         }
     }
 
+    /**
+     * Starts the basic idle animation interval
+     * @private
+     */
     startIdleAnimation() {
         this.idleInterval = setInterval(() => {
             this.character.playAnimation(this.character.IMAGES_IDLE);
         }, 100);
     }
 
+    /**
+     * Starts the timer for transitioning to long idle animation
+     * @private
+     */
     startLongIdleTimer() {
         this.longIdleTimeout = setTimeout(() => {
             this.playLongIdleAnimation();
         }, 8000);
     }
 
+    /**
+     * Initiates the throw animation sequence
+     * @param {Function} callback - Function to be called when throw animation reaches frame 4
+     */
     startThrowAnimation(callback) {
         if (!this.character.canThrow || this.throwAnimationInterval) return;
 
@@ -115,6 +146,9 @@ class CharacterAnimationManager {
         this.throwAnimationInterval = null;
     }
 
+    /**
+     * Starts the slap animation sequence and handles hit detection
+     */
     startSlapAnimation() {
         let slapHitRegistered = false;
         
@@ -125,13 +159,19 @@ class CharacterAnimationManager {
             this.character.checkSlapAnimationEnd();
         }, 50);
     }
-
+    
+    /**
+     * Updates the slap animation state and ends it if complete
+     */
     updateSlapAnimation() {
         if (this.character.currentImage >= this.character.IMAGES_SLAP.length) {
             this.endSlapAnimation();
         }
     }
-
+    
+    /**
+     * Ends the slap animation and resets character properties
+     */
     endSlapAnimation() {
         clearInterval(this.slapAnimationInterval);
         this.slapAnimationInterval = null;

@@ -30,9 +30,12 @@ class World {
         this.draw(); 
     }
 
+    /**
+     * Starts the game and initializes all game objects
+     */
     startGame() {
         this.gameIsRunning = true;
-        this.level = initLevel(); // Vollständiges Level laden
+        this.level = initLevel();
         this.coins = this.level.light.filter(obj => obj instanceof Coin);
         this.poisons = this.level.light.filter(obj => obj instanceof Posion);
         this.setWorld();
@@ -50,6 +53,9 @@ class World {
         this.character.initializeCharacter(); 
 }
 
+/**
+ * Main game loop that checks for collisions and interactions
+ */
 run() {
     if (!this.gameIsRunning) return;
     
@@ -100,6 +106,9 @@ checkSpaceThrow() {
     }
 }
  
+/**
+ * Checks for collisions between character and enemies
+ */
 checkCollisions() {
     this.level.enemies.forEach((enemy) => { 
         if (this.shouldHandleCollision(enemy)) {
@@ -187,6 +196,9 @@ checkCharacterPoisonCollision() {
     });
 }
     
+/**
+ * Checks for collisions between bubbles and enemies
+ */
 checkBubbleEnemyCollision() {
     this.throwableObject.forEach((bubble, bubbleIndex) => {
         this.level.enemies.forEach((enemy, enemyIndex) => {
@@ -209,6 +221,10 @@ checkBubbleEnemyCollision() {
     });
 }
 
+/**
+ * Starts knockback animation for hit enemies
+ * @param {MovableObject} enemy - The enemy to knock back
+ */
 startKnockbackAnimation(enemy) {
     enemy.isKnockedBack = true;
     let knockbackSpeedX = 15;  
@@ -230,6 +246,9 @@ startKnockbackAnimation(enemy) {
     }, 1000 / 60);
 }
 
+/**
+ * Draws all game objects on the canvas
+ */
 draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -264,6 +283,10 @@ draw() {
         });
     }
 
+    /**
+     * Adds a single object to the game map
+     * @param {MovableObject} mo - The object to add
+     */
     addToMap(mo) {
         if (mo.otherDirection) {
             this.flipImage(mo);

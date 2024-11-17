@@ -5,6 +5,10 @@ let isMuted = true;
 let gameStarted = false;
 let mobileControls;
 
+
+/**
+ * Initializes the game and sets up mobile controls if needed
+ */
 function init() {
     canvas = document.getElementById('canvas');
     if (isMobile()) {
@@ -12,10 +16,17 @@ function init() {
     }
 }
 
+/**
+ * Checks if the device is a mobile device
+ * @returns {boolean} True if mobile device, false otherwise
+ */
 function isMobile() {
     return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
+/**
+ * Starts the game and initializes the game world
+ */
 function startGame() {
     if (!gameStarted) {
         gameStarted = true;
@@ -40,6 +51,10 @@ function hideMobileControls() {
     document.querySelector('.mobile-controls').style.display = 'none';
 }
 
+/**
+ * Shows a loading screen with animation
+ * @returns {Promise} Promise that resolves when loading is complete
+ */
 function showCanvasLoading() {
     return new Promise(resolve => {
         hideMobileControls();
@@ -64,6 +79,10 @@ function showCanvasLoading() {
     });
 }
 
+/**
+ * Loads the Sharkie character image
+ * @returns {HTMLImageElement} The loaded image element
+ */
 function initializeLoadingState() {
     return {
         ctx: canvas.getContext('2d'),
@@ -104,6 +123,10 @@ function drawLoadingBar(state) {
     drawLoadingBarProgress(state);
 }
 
+/**
+ * Draws the loading bar background
+ * @param {CanvasRenderingContext2D} ctx The canvas context
+ */
 function drawLoadingBarBackground(ctx) {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.roundRect(canvas.width/2 - 100, canvas.height/2 + 20, 200, 20, 10);
@@ -130,12 +153,20 @@ function drawLoadingText(ctx) {
     ctx.fillText('Loading...', canvas.width/2, canvas.height/2 + 80);
 }
 
+/**
+ * Updates the loading progress
+ * @param {Object} state The current loading state
+ * @returns {boolean} True if still loading, false when complete
+ */
 function updateProgress(state) {
     let elapsedTime = Date.now() - state.startTime;
     state.progress = Math.min(100, (elapsedTime / 2000) * 100);
     return state.progress < 100;
 }
 
+/**
+ * Toggles sound on/off and updates UI accordingly
+ */
 function toggleSound() {
     isMuted = !isMuted;
     let soundBtn = document.querySelector('.sound-btn');
@@ -162,6 +193,10 @@ function hideInstructions() {
     document.getElementById('main-menu').style.display = 'flex';
 }
 
+/**
+ * Event handler for keyboard inputs
+ * @param {KeyboardEvent} e The keyboard event
+ */
 window.addEventListener("keydown", (e) => {
     if (e.keyCode ==  39) {
         keyboard.RIGHT = true;
