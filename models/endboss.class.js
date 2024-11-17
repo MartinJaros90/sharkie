@@ -358,43 +358,50 @@ class Endboss extends MovableObject{
         
         let victoryImage = new Image();
         victoryImage.src = 'img/6.Botones/Tittles/You Win/Recurso 19.png';
-        
-        let animate = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = `rgba(0, 0, 50, ${Math.min(alpha * 0.5, 0.7)})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            if (victoryImage.complete) {
-                let imgWidth = canvas.width * 0.6 * (scale >= 1 ? 1 : scale);
-                let imgHeight = (imgWidth * victoryImage.height) / victoryImage.width;
-                let x = (canvas.width - imgWidth) / 2;
-                let y = (canvas.height - imgHeight) / 2;
-                
-                ctx.save();
-                ctx.globalAlpha = alpha;
-                ctx.drawImage(victoryImage, x, y, imgWidth, imgHeight);
-                
-                if (alpha >= 1) {
-                    this.drawVictoryEffects(ctx, canvas, alpha, time);
-                } else {
-                    this.drawVictoryEffects(ctx, canvas, alpha);
-                }
-                ctx.restore();
-            }
 
-            if (alpha < 1) {
-                alpha = Math.min(alpha + 0.01, 1);
-            }
-            if (scale < 1) {
-                scale = Math.min(scale + 0.02, 1);
-            }
+        victoryImage.onload = () => {
+            let animate = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = `rgba(0, 0, 50, ${Math.min(alpha * 0.5, 0.7)})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Überprüfe ob das Bild vollständig geladen ist
+                if (victoryImage.complete && victoryImage.naturalWidth !== 0) {
+                    let imgWidth = canvas.width * 0.6 * (scale >= 1 ? 1 : scale);
+                    let imgHeight = (imgWidth * victoryImage.height) / victoryImage.width;
+                    let x = (canvas.width - imgWidth) / 2;
+                    let y = (canvas.height - imgHeight) / 2;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.drawImage(victoryImage, x, y, imgWidth, imgHeight);
+                    
+                    if (alpha >= 1) {
+                        this.drawVictoryEffects(ctx, canvas, alpha, time);
+                    } else {
+                        this.drawVictoryEffects(ctx, canvas, alpha);
+                    }
+                    ctx.restore();
+                }
+    
+                if (alpha < 1) {
+                    alpha = Math.min(alpha + 0.01, 1);
+                }
+                if (scale < 1) {
+                    scale = Math.min(scale + 0.02, 1);
+                }
+                
+                time += 0.02; 
+                
+                requestAnimationFrame(animate);
+            };
             
-            time += 0.02; 
-            
-            requestAnimationFrame(animate);
+            animate();
         };
-        
-        animate();
+    
+        victoryImage.onerror = () => {
+            console.error('Fehler beim Laden des Victory-Bildes');
+        };
     }
     
     /**

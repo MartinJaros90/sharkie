@@ -8,7 +8,6 @@ class AudioManager {
         poison: new Audio('audio/poison.mp3'),
         slap: new Audio('audio/slap.mp3'),
         victory: new Audio('audio/victory.mp3'),
-        gameOver: new Audio('audio/game-over.mp3'),
         boss: new Audio('audio/boss-sound.mp3'),
         shock: new Audio('audio/shock.mp3')
     };
