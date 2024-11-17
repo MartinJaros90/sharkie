@@ -33,7 +33,7 @@ class Character extends MovableObject {
         'img/1.Sharkie/1.IDLE/18.png'
     ];
     IMAGES_LONG_IDLE = [
-        'img/1.Sharkie/2.Long_IDLE/i1.png',
+        'img/1.Sharkie/2.Long_IDLE/I1.png',
         'img/1.Sharkie/2.Long_IDLE/I2.png',
         'img/1.Sharkie/2.Long_IDLE/I3.png',
         'img/1.Sharkie/2.Long_IDLE/I4.png',
