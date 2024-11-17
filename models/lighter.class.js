@@ -8,12 +8,6 @@ class Light extends MovableObject{
         super().loadImage('img/3. Background/Layers/1. Light/completo.png');
         
         this.x = Math.random() * 500;
-        // this.animate();
     }
-
-
-    // animate() {
-    //     this.moveLeft();
-    // }
 
 }

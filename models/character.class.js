@@ -101,15 +101,16 @@ class Character extends MovableObject {
     isElectrocuted = false;
     slapCooldown = 3; 
     cooldownDisplay = '';
-    bubbleCooldown = 800; 
     canSlap = true;
     canThrow = true;
     animateInterval;
     isDying = false;
     deathAnimationComplete = false;
+    bubbleCooldown = 1000;
 
     constructor() {
         super().loadImage('img/1.Sharkie/3.Swim/1.png');
+        this.animationManager = new CharacterAnimationManager(this);
         this.loadImages(this.IMAGES_SWIMM);
         this.loadImages(this.IMAGES_IDLE);
         this.loadImages(this.IMAGES_LONG_IDLE);
@@ -120,38 +121,12 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_ELECTROSHOCK);
     }
     
-
     startThrowAnimation(callback) {
-        if (!this.canThrow) return; 
-        
-        this.canThrow = false; 
-        this.currentImage = 0; 
-    
-        this.throwAnimationInterval = setInterval(() => {
-            this.playAnimation(this.IMAGES_THROW);
-    
-            if (this.currentImage === 4) {
-                if (callback) callback(this.otherDirection); 
-            }
-    
-            if (this.currentImage >= this.IMAGES_THROW.length) {
-                clearInterval(this.throwAnimationInterval);
-                this.throwAnimationInterval = null;
-                
-                setTimeout(() => {
-                    this.canThrow = true;
-                }, this.bubbleCooldown);
-            }
-        }, 1000 / 25);
+        this.animationManager.startThrowAnimation(callback);
     }
 
     playLongIdleAnimation() {
-        clearInterval(this.idleInterval);
-        clearInterval(this.longIdleInterval);
-
-        this.longIdleInterval = setInterval(() => {
-            this.playAnimation(this.IMAGES_LONG_IDLE);
-        }, 500);
+        this.animationManager.playLongIdleAnimation();
     }
 
     initializeCharacter() {
@@ -235,276 +210,45 @@ class Character extends MovableObject {
     }
 
     clearAllAnimations() {
-        clearInterval(this.idleInterval);
-        clearInterval(this.longIdleInterval);
-        clearTimeout(this.longIdleTimeout);
-        clearInterval(this.slapAnimationInterval);
-        clearInterval(this.throwAnimationInterval);
-        this.idleInterval = null;
-        this.longIdleInterval = null;
-        this.longIdleTimeout = null;
-        this.slapAnimationInterval = null;
-        this.throwAnimationInterval = null;
+        this.animationManager.clearAllAnimations();
     }
 
     playDeathAnimation() {
-        let currentFrame = 0;
-        let frameCount = this.IMAGES_DEAD.length;
-        let startTime = Date.now();
-        let animationDuration = 2000; 
-        
-        let deathInterval = setInterval(() => {
-        let currentTime = Date.now();
-        let elapsed = currentTime - startTime;
-        let progress = Math.min(elapsed / animationDuration, 1);
-            
-            currentFrame = Math.min(Math.floor(progress * frameCount), frameCount - 1);
-            this.img = this.imageCache[this.IMAGES_DEAD[currentFrame]];
-            if (progress >= 1) {
-                clearInterval(deathInterval);
-                this.deathAnimationComplete = true;
-                
-                setTimeout(() => {
-                    this.showGameOverScreen();
-                }, 2000);
-            }
-        }, 1000 / 30); 
+        this.animationManager.playDeathAnimation();
     }
     
     showGameOverScreen() {
-        this.world.gameIsRunning = false;
-        this.setupGameOver();
-    }
-    
-    setupGameOver() {
-        let gameOverImage = new Image();
-        gameOverImage.src = 'img/6.Botones/Tittles/Game Over/Recurso 12.png';
-        let isHovered = false;
-
-        this.gameOverHandlers = this.createEventHandlers(gameOverImage, isHovered);
-        this.addEventListeners(this.gameOverHandlers);
-        
-        if (gameOverImage.complete) {
-            this.renderGameOver(gameOverImage, isHovered);
-        } else {
-            gameOverImage.onload = () => this.renderGameOver(gameOverImage, isHovered);
+        if (!this.gameOver) {
+            this.gameOver = new GameOver(this.world);
         }
+        this.gameOver.show();
     }
     
-    createEventHandlers(gameOverImage, isHovered) {
-        let handleClick = (event) => {
-            if (this.isButtonClicked(event, gameOverImage)) {
-                this.restartGame();
-            }
-        };
-    
-        let handleMouseMove = (event) => {
-            let newIsHovered = this.isButtonHovered(event, gameOverImage);
-            if (newIsHovered !== isHovered) {
-                isHovered = newIsHovered;
-                this.world.canvas.style.cursor = isHovered ? 'pointer' : 'default';
-            }
-        };
-    
-        let handleKeydown = (e) => {
-            if (e.key === 'Enter') this.restartGame();
-        };
-    
-        return { handleClick, handleMouseMove, handleKeydown };
-    }
-    
-    addEventListeners({ handleClick, handleMouseMove, handleKeydown }) {
-        this.world.canvas.addEventListener('mousemove', handleMouseMove);
-        this.world.canvas.addEventListener('click', handleClick);
-        document.addEventListener('keydown', handleKeydown);
-    }
-    
-    restartGame() {
-        let { handleClick, handleMouseMove, handleKeydown } = this.gameOverHandlers;
-        this.world.canvas.removeEventListener('mousemove', handleMouseMove);
-        this.world.canvas.removeEventListener('click', handleClick);
-        document.removeEventListener('keydown', handleKeydown);
-        location.reload();
-    }
-    
-    isButtonClicked(event, gameOverImage) {
-        let { x, y } = this.getMousePosition(event);
-        let buttonDimensions = this.getButtonDimensions(gameOverImage);
-        return this.isPointInButton(x, y, buttonDimensions);
-    }
-    
-    isButtonHovered(event, gameOverImage) {
-        let { x, y } = this.getMousePosition(event);
-        let buttonDimensions = this.getButtonDimensions(gameOverImage);
-        return this.isPointInButton(x, y, buttonDimensions);
-    }
-    
-    getMousePosition(event) {
-        let rect = this.world.canvas.getBoundingClientRect();
-        return {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
-        };
-    }
-    
-    getButtonDimensions(gameOverImage) {
-        let buttonWidth = 200;
-        let buttonHeight = 50;
-        let buttonX = (this.world.canvas.width - buttonWidth) / 2;
-        let buttonY = (this.world.canvas.height / 2) + 
-                       (this.world.canvas.width * 0.6 * gameOverImage.height / gameOverImage.width) / 2 + 20;
-        return { buttonX, buttonY, buttonWidth, buttonHeight };
-    }
-    
-    isPointInButton(x, y, { buttonX, buttonY, buttonWidth, buttonHeight }) {
-        return x >= buttonX && x <= buttonX + buttonWidth &&
-               y >= buttonY && y <= buttonY + buttonHeight;
-    }
-    
-    renderGameOver(gameOverImage, isHovered) {
-        let ctx = this.world.ctx;
-        let canvas = this.world.canvas;
-        
-        this.drawBackground(ctx, canvas);
-        
-        if (gameOverImage.complete) {
-            this.drawGameOverImage(ctx, canvas, gameOverImage);
-            this.drawButton(ctx, canvas, gameOverImage, isHovered);
-        }
-        
-        if (!this.world.gameIsRunning) {
-            requestAnimationFrame(() => this.renderGameOver(gameOverImage, isHovered));
-        }
-    }
-    
-    drawBackground(ctx, canvas) {
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    
-    drawGameOverImage(ctx, canvas, gameOverImage) {
-        let imgWidth = canvas.width * 0.6;
-        let imgHeight = (imgWidth * gameOverImage.height) / gameOverImage.width;
-        let x = (canvas.width - imgWidth) / 2;
-        let y = (canvas.height - imgHeight) / 2;
-        ctx.drawImage(gameOverImage, x, y, imgWidth, imgHeight);
-    }
-    
-    drawButton(ctx, canvas, gameOverImage, isHovered) {
-        let dimensions = this.getButtonDimensions(gameOverImage);
-        
-        this.drawButtonBackground(ctx, dimensions, isHovered);
-        this.drawButtonBorder(ctx, dimensions);
-        this.drawButtonShadow(ctx, isHovered);
-        this.drawButtonText(ctx, dimensions, isHovered);
-        
-        if (isHovered) {
-            this.drawButtonHoverEffect(ctx, dimensions);
-        }
-        
-        ctx.restore();
-    }
-    
-    drawButtonBackground(ctx, { buttonX, buttonY, buttonWidth, buttonHeight }, isHovered) {
-        ctx.beginPath();
-        ctx.roundRect(buttonX, buttonY, buttonWidth, buttonHeight, 25);
-        ctx.fillStyle = isHovered ? 'rgba(127, 255, 224, 1)' : 'rgba(127, 255, 224, 0.9)';
-        ctx.fill();
-    }
-    
-    drawButtonBorder(ctx, { buttonX, buttonY, buttonWidth, buttonHeight }) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    }
-    
-    drawButtonShadow(ctx, isHovered) {
-        if (isHovered) {
-            ctx.shadowColor = 'rgba(127, 255, 224, 0.8)';
-            ctx.shadowBlur = 25;
-            ctx.shadowOffsetY = 6;
-        } else {
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-            ctx.shadowBlur = 15;
-            ctx.shadowOffsetY = 4;
-        }
-        ctx.shadowOffsetX = 0;
-    }
-    
-    drawButtonText(ctx, { buttonX, buttonY, buttonHeight }, isHovered) {
-        ctx.font = "22px 'luckiest-guy'";
-        ctx.fillStyle = isHovered ? '#1a0f0a' : '#2c1810';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        let textY = buttonY + buttonHeight / 2;
-        ctx.fillText('TRY AGAIN', this.world.canvas.width / 2, isHovered ? textY - 3 : textY);
-    }
-    
-    drawButtonHoverEffect(ctx, { buttonX, buttonY, buttonWidth, buttonHeight }) {
-        let gradient = ctx.createLinearGradient(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight);
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
-        gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = gradient;
-        ctx.fill();
-    }
-
     isDead() {
         return this.energy === 0;
     }
 
-    
+
     clearIdleAnimations() {
-        clearInterval(this.idleInterval);
-        clearInterval(this.longIdleInterval);
-        clearTimeout(this.longIdleTimeout);
-        this.idleInterval = null;
-        this.longIdleInterval = null;
-        this.longIdleTimeout = null;
+        this.animationManager.clearIdleAnimations();
     }
     
     handleIdleAnimations() {
-        if (!this.idleInterval) {
-            this.startIdleAnimation();
-        }
-        if (!this.longIdleTimeout) {
-            this.startLongIdleTimer();
-        }
+        this.animationManager.handleIdleAnimations();
     }
 
-
-
     startIdleAnimation() {
-        this.idleInterval = setInterval(() => {
-            this.playIdleAnimation();
-        }, 100);
+        this.animationManager.startIdleAnimation();
     }
 
     startLongIdleTimer() {
-        this.longIdleTimeout = setTimeout(() => {
-            this.playLongIdleAnimation();
-        }, 8000);
+        this.animationManager.startLongIdleTimer();
     }
 
     playIdleAnimation() {
         this.playAnimation(this.IMAGES_IDLE);
     }
 
-
-isWithinExtendedRange(enemy, range) {
-    return (
-        this.x + this.width + range > enemy.x &&
-        this.x - range < enemy.x + enemy.width &&
-        this.y + this.height + range > enemy.y &&
-        this.y - range < enemy.y + enemy.height
-    );
-}
-
-    
-    
-    
 slapAttack() {
     if (!this.canPerformSlap()) return;
     
@@ -526,14 +270,7 @@ initializeSlap() {
 }
 
 startSlapAnimation() {
-    let slapHitRegistered = false;
-    
-    this.slapAnimationInterval = setInterval(() => {
-        this.updateSlapWidth();
-        this.updateSlapAnimation();
-        this.checkSlapHit(slapHitRegistered);
-        this.checkSlapAnimationEnd();
-    }, 1000 / 15);
+    this.animationManager.startSlapAnimation();
 }
 
 updateSlapWidth() {
@@ -545,9 +282,7 @@ updateSlapWidth() {
 }
 
 updateSlapAnimation() {
-    if (this.currentImage % 2 === 0) {
-        this.playAnimation(this.IMAGES_SLAP);
-    }
+    this.animationManager.updateSlapAnimation();
 }
 
 checkSlapHit(slapHitRegistered) {
@@ -585,10 +320,7 @@ checkSlapAnimationEnd() {
 }
 
 endSlapAnimation() {
-    clearInterval(this.slapAnimationInterval);
-    this.slapAnimationInterval = null;
-    this.isSlapping = false;
-    this.width = this.originalWidth;
+    this.animationManager.endSlapAnimation();
 }
 
 startSlapCooldownDisplay() {
@@ -602,7 +334,6 @@ startSlapCooldownDisplay() {
         if (remainingCooldown > 0) {
             this.cooldownDisplay = `${remainingCooldown}...`;
         } else if (remainingCooldown === 0) {
-            // Zeige SLAP!
             this.cooldownDisplay = 'SLAP!';
             
             setTimeout(() => {
@@ -616,6 +347,10 @@ startSlapCooldownDisplay() {
 }
 
 isWithinExtendedRange(enemy, range) {
+    if (enemy.isTrappedInBubble) {
+        return false;
+    }
+
     let attackBox = {
         x: this.otherDirection ? this.x - range : this.x + this.width,
         y: this.y + this.height * 0.3,

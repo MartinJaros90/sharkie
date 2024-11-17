@@ -1,4 +1,4 @@
-let level1; // Globale Variable für das Level
+let level1; 
 
 function initLevel() {
     level1 = new Level(
@@ -12,13 +12,11 @@ function initLevel() {
 function createEnemies() {
     let enemies = [];
     
-    // Zone 1: Anfängerbereich (0-800px)
     enemies.push(
         new EnemyFish(500, 100),
         new EnemyFish(400, 300)
     );
     
-    // Zone 2: Mittlerer Bereich (800-1600px)
     enemies.push(
         new EnemyPink(900, 150),
         new EnemyPink(1200, 350),
@@ -26,7 +24,6 @@ function createEnemies() {
         new EnemyJelly(1400, 300)
     );
     
-    // Zone 3: Schwerer Bereich (1600-2400px)
     enemies.push(
         new EnemyYellow(1700, 250),
         new EnemyYellow(1900, 150),

@@ -41,7 +41,7 @@ class EnemyYellow extends MovableObject {
 
     playHitAnimation(callback) {
         this.currentImage = 0;
-        const interval = setInterval(() => {
+        let interval = setInterval(() => {
             this.playAnimation(this.IMAGES_HIT);
 
             if (this.currentImage >= this.IMAGES_HIT.length) {

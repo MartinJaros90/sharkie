@@ -25,7 +25,6 @@ class EnemyFish extends MovableObject {
         this.animate();
     }
 
-
     animate() {
 
          setInterval(() => {

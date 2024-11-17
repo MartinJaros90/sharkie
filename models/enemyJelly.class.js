@@ -41,12 +41,12 @@ class EnemyJelly extends MovableObject {
 
     playHitAnimation(callback) {
         this.currentImage = 0;
-        const interval = setInterval(() => {
+        let interval = setInterval(() => {
             this.playAnimation(this.IMAGES_HIT);
 
             if (this.currentImage >= this.IMAGES_HIT.length) {
                 clearInterval(interval);
-                if (callback) callback(); // Gegner entfernen
+                if (callback) callback(); 
             }
         }, 1000 / 30);
     }

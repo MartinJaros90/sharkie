@@ -21,7 +21,6 @@ class EnemyPink extends MovableObject {
         this.speed = 0.35 + Math.random() * 0.5;
     }
 
-
     animate() {
          setInterval(() => {
             this.moveLeft();

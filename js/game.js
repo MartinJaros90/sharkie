@@ -3,9 +3,17 @@ let world;
 let keyboard = new Keyboard();
 let isMuted = true;
 let gameStarted = false;
+let mobileControls;
 
 function init() {
     canvas = document.getElementById('canvas');
+    if (isMobile()) {
+        mobileControls = new MobileControls(keyboard);
+    }
+}
+
+function isMobile() {
+    return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 function startGame() {
@@ -18,6 +26,9 @@ function startGame() {
             .then(() => {
                 world = new World(canvas, keyboard);
                 world.startGame();
+                if (isMobile()) {
+                    document.querySelector('.mobile-controls').style.display = 'flex';
+                }
                 if (!isMuted) {
                     AudioManager.startBackgroundMusic();
                 }
@@ -25,8 +36,14 @@ function startGame() {
     }
 }
 
+function hideMobileControls() {
+    document.querySelector('.mobile-controls').style.display = 'none';
+}
+
 function showCanvasLoading() {
     return new Promise(resolve => {
+        hideMobileControls();
+        
         let loadingState = initializeLoadingState();
         let sharkieImg = loadSharkieImage();
         
@@ -47,7 +64,6 @@ function showCanvasLoading() {
     });
 }
 
-
 function initializeLoadingState() {
     return {
         ctx: canvas.getContext('2d'),
@@ -57,19 +73,16 @@ function initializeLoadingState() {
     };
 }
 
-
 function loadSharkieImage() {
     let img = new Image();
     img.src = 'img/1.Sharkie/1.IDLE/1.png';
     return img;
 }
 
-
 function drawLoadingBackground(ctx) {
     ctx.fillStyle = 'rgba(0, 0, 50, 0.9)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
-
 
 function drawSharkieCharacter(state, sharkieImg) {
     if (sharkieImg.complete) {
@@ -86,19 +99,16 @@ function drawSharkieCharacter(state, sharkieImg) {
     }
 }
 
-
 function drawLoadingBar(state) {
     drawLoadingBarBackground(state.ctx);
     drawLoadingBarProgress(state);
 }
-
 
 function drawLoadingBarBackground(ctx) {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.roundRect(canvas.width/2 - 100, canvas.height/2 + 20, 200, 20, 10);
     ctx.fill();
 }
-
 
 function drawLoadingBarProgress(state) {
     state.ctx.fillStyle = '#4e9fff';
@@ -113,14 +123,12 @@ function drawLoadingBarProgress(state) {
     state.ctx.fill();
 }
 
-
 function drawLoadingText(ctx) {
     ctx.fillStyle = 'white';
-    ctx.font = '24px "Press Start 2P"';
+    ctx.font = '24px "luckiest-guy"';
     ctx.textAlign = 'center';
     ctx.fillText('Loading...', canvas.width/2, canvas.height/2 + 80);
 }
-
 
 function updateProgress(state) {
     let elapsedTime = Date.now() - state.startTime;
@@ -154,8 +162,6 @@ function hideInstructions() {
     document.getElementById('main-menu').style.display = 'flex';
 }
 
-
-
 window.addEventListener("keydown", (e) => {
     if (e.keyCode ==  39) {
         keyboard.RIGHT = true;
@@ -182,7 +188,6 @@ window.addEventListener("keydown", (e) => {
     }
     
 });
-
 
 window.addEventListener("keyup", (e) => {
     if (e.keyCode ==  39) {

@@ -16,7 +16,7 @@ class MovableObject extends DrawableObject{
     }
 
     isAboveGround() {
-        if (this instanceof ThrowableObject) { //Throwable Object should always fall
+        if (this instanceof ThrowableObject) { 
             return true;
         } else {
             return this.y < 180;
@@ -33,29 +33,29 @@ class MovableObject extends DrawableObject{
 
 
     isColliding(mo) {
+        if (mo.isTrappedInBubble) {
+            return false;
+        }
+    
         if (mo instanceof Endboss) {
-            // Große Offsets für den Endboss
-            let bossOffsetX = 100;  // Von 160 auf 100 reduziert
-            let bossOffsetY = 100;  // Von 600 auf 100 reduziert
-            let bossOffsetTop = 100; // Von 500 auf 100 reduziert
+            let bossOffsetX = 100; 
+            let bossOffsetY = 100;  
+            let bossOffsetTop = 100; 
             
-            // Offsets für das kollidierende Objekt (z.B. Bubble)
             let myOffsetX = 40;
             let myOffsetY = 20;
             let myOffsetTop = 140;
     
-            // Reduzierte Größen
             let myReducedWidth = this.width - 2 * myOffsetX;
             let myReducedHeight = this.height - myOffsetY - myOffsetTop;
-            let bossReducedWidth = mo.width - 2 * bossOffsetX;  // Reduziert die 480px Breite
-            let bossReducedHeight = mo.height - bossOffsetY - bossOffsetTop; // Reduziert die 400px Höhe
+            let bossReducedWidth = mo.width - 2 * bossOffsetX;  
+            let bossReducedHeight = mo.height - bossOffsetY - bossOffsetTop;
     
             return (this.x + myOffsetX + myReducedWidth > mo.x + bossOffsetX &&
                     this.y + myOffsetTop + myReducedHeight > mo.y + bossOffsetTop &&
                     this.x + myOffsetX < mo.x + bossOffsetX + bossReducedWidth &&
                     this.y + myOffsetTop < mo.y + bossOffsetTop + bossReducedHeight);
         } else {
-            // Bestehende Kollisionserkennung für andere Objekte
             let offsetX = 40;
             let offsetY = 40;
             let offsetTop = 120;
@@ -72,7 +72,7 @@ class MovableObject extends DrawableObject{
 
 
     hit() {
-        this.energy -= 20; // Änderung von 5 auf 20 für 5 Treffer (100/5 = 20)
+        this.energy -= 20; 
         if (this.energy < 0) {
             this.energy = 0;
         } else {
@@ -83,12 +83,10 @@ class MovableObject extends DrawableObject{
 
     hasSimpleCollisionWith(otherObject) {
         if (otherObject instanceof Endboss) {
-            // Spezielle Kollisionserkennung für Endboss
             let bossOffsetX = 100;
             let bossOffsetY = 100;
             let bossOffsetTop = 100;
     
-            // Reduzierte Größen für den Boss
             let bossReducedWidth = otherObject.width - 2 * bossOffsetX;
             let bossReducedHeight = otherObject.height - bossOffsetY - bossOffsetTop;
     
@@ -99,7 +97,7 @@ class MovableObject extends DrawableObject{
                 this.y < otherObject.y + bossOffsetTop + bossReducedHeight
             );
         } else {
-            // Normale Kollisionserkennung für andere Objekte
+
             return (
                 this.x + this.width > otherObject.x &&
                 this.x < otherObject.x + otherObject.width &&
@@ -139,7 +137,7 @@ playHurtAnimation() {
 isHurt() {
     let timepassed = new Date().getTime() - this.lastHit;
     timepassed = timepassed / 1000;
-    return timepassed < 1; // Kürzere Verletzungszeit
+    return timepassed < 1; 
 }
 
     isDead() {

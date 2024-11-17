@@ -104,7 +104,6 @@ class Endboss extends MovableObject{
     animate() {
         let i = 0;
         setInterval(() => {
-            // Boss-Intro Check
             if (this.world?.character?.x > 2000 && !this.hadFirstContact) {
                 i = 0;
                 this.hadFirstContact = true;
@@ -113,8 +112,7 @@ class Endboss extends MovableObject{
                 AudioManager.play('boss');
                 this.world.endbossStatusBar.visible = true;
             }
-            
-            // Animations-Logik
+
             if (this.isDead()) {
                 if (!this.isDying) {
                     if (this.currentDeadImage < this.IMAGES_DEAD.length - 1) {
@@ -127,7 +125,6 @@ class Endboss extends MovableObject{
                     }
                 }
             } else if (this.hadFirstContact && !this.introduceFinished) {
-                // Intro-Animation
                 this.playAnimation(this.IMAGES_INTRODUCE);
                 if (i >= 9) { 
                     this.introduceFinished = true;
@@ -198,8 +195,8 @@ class Endboss extends MovableObject{
     moveVertically() {
         this.y += this.verticalSpeed * this.verticalDirection;
         
-        const minY = 50; 
-        const maxY = 180; 
+        let minY = 50; 
+        let maxY = 180; 
         
         if (this.y < minY) {
             this.y = minY;
@@ -221,7 +218,7 @@ class Endboss extends MovableObject{
     }
 
     checkDirectionChange() {
-        const currentTime = new Date().getTime();
+        let currentTime = new Date().getTime();
         if (currentTime - this.lastDirectionChange > this.directionChangeInterval) {
             if (Math.random() > 0.3) {
                 this.verticalDirection *= -1;
@@ -233,7 +230,7 @@ class Endboss extends MovableObject{
     startAttackInterval() {
         setInterval(() => {
             if (!this.isDead() && !this.isHurt() && !this.movementPause) {
-                const distanceToPlayer = Math.abs(this.x - this.world?.character?.x);
+                let distanceToPlayer = Math.abs(this.x - this.world?.character?.x);
                 
                 if (distanceToPlayer < 300 && Math.random() < 0.3) {
                     this.startComboAttack();
@@ -268,7 +265,7 @@ class Endboss extends MovableObject{
         
         this.isAttacking = true;
         
-        const attackDuration = this.comboAttackActive ? 600 : 1000;
+        let attackDuration = this.comboAttackActive ? 600 : 1000;
         
         setTimeout(() => {
             this.isAttacking = false;
@@ -293,6 +290,97 @@ class Endboss extends MovableObject{
         
         this.world.endbossStatusBar.setPercentage(this.energy);
         this.lastHit = new Date().getTime();
+    
+        if (this.isDead()) {
+            this.startVictorySequence(); 
+        }
+    }
+
+    startVictorySequence() {
+        AudioManager.stopAll();
+        hideMobileControls();
+        
+        setTimeout(() => {
+            this.showVictoryScreen();
+        }, 2000);
+    }
+
+    showVictoryScreen() {
+        this.world.gameIsRunning = false;
+        let ctx = this.world.ctx;
+        let canvas = this.world.canvas;
+        let alpha = 0;
+        let scale = 0.1;
+        let time = 0; 
+        
+        let victoryImage = new Image();
+        victoryImage.src = 'img/6.Botones/Tittles/You Win/Recurso 19.png';
+        
+        let animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = `rgba(0, 0, 50, ${Math.min(alpha * 0.5, 0.7)})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (victoryImage.complete) {
+                let imgWidth = canvas.width * 0.6 * (scale >= 1 ? 1 : scale);
+                let imgHeight = (imgWidth * victoryImage.height) / victoryImage.width;
+                let x = (canvas.width - imgWidth) / 2;
+                let y = (canvas.height - imgHeight) / 2;
+                
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.drawImage(victoryImage, x, y, imgWidth, imgHeight);
+                
+                if (alpha >= 1) {
+                    this.drawVictoryEffects(ctx, canvas, alpha, time);
+                } else {
+                    this.drawVictoryEffects(ctx, canvas, alpha);
+                }
+                ctx.restore();
+            }
+
+            if (alpha < 1) {
+                alpha = Math.min(alpha + 0.01, 1);
+            }
+            if (scale < 1) {
+                scale = Math.min(scale + 0.02, 1);
+            }
+            
+            time += 0.02; 
+            
+            requestAnimationFrame(animate);
+        };
+        
+        animate();
+    }
+    
+    drawVictoryEffects(ctx, canvas, alpha, time = 0) {
+        this.drawStars(ctx, canvas, alpha, time);
+        this.drawVictoryText(ctx, canvas, alpha);
+    }
+    
+    drawStars(ctx, canvas, alpha, time = 0) {
+        for (let i = 0; i < 100; i++) {
+            let x = Math.random() * canvas.width;
+            let y = Math.random() * canvas.height;
+            let size = Math.random() * 2 + 1;
+            
+            let pulse = time ? Math.sin(time + i) * 0.3 + 0.7 : 1;
+            let flickerAlpha = alpha * pulse * (0.5 + Math.random() * 0.5);
+            
+            ctx.fillStyle = `rgba(255, 255, 255, ${flickerAlpha})`;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    drawVictoryText(ctx, canvas, alpha) {
+        let textAlpha = Math.max(0, (alpha - 0.3) * 1.5);
+        ctx.font = "30px 'luckiest-guy'";
+        ctx.fillStyle = `rgba(127, 255, 224, ${textAlpha})`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Congratulations!', canvas.width / 2, canvas.height * 0.8);
     }
 
     isDead() {

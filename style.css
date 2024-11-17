@@ -235,7 +235,6 @@ h1{
     }
 }
 
-/* Instructions Styling */
 .instructions-container {
     position: absolute;
     inset: 0; 
@@ -259,7 +258,6 @@ h1{
     box-shadow: 0 0 30px rgba(127, 255, 224, 0.2);
 }
 
-/* Rest des Stylings bleibt gleich */
 .instruction-row {
     display: flex;
     justify-content: center;
@@ -307,40 +305,40 @@ h1{
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Responsive Anpassungen für Instructions */
+
 @media only screen and (max-width: 720px) {
     .instructions-container {
-        width: 90%;    /* Relative Breite statt fixer Breite */
-        height: auto;  /* Höhe passt sich an Inhalt an */
-        padding: 20px; /* Kleinerer Padding auf kleinen Screens */
-        gap: 20px;     /* Kleinerer Abstand zwischen Elementen */
+        width: 90%;    
+        height: auto;  
+        padding: 20px; 
+        gap: 20px;    
     }
 
     .instruction-row {
-        flex-direction: column; /* Stapelt Elemente bei sehr kleinen Screens */
+        flex-direction: column; 
         align-items: center;
         gap: 15px;
     }
 
     .instruction-item {
-        gap: 15px;    /* Kleinerer Abstand */
+        gap: 15px;   
     }
 
     .key-img {
-        height: 35px; /* Kleinere Bilder */
+        height: 35px; 
     }
 
     .title-img {
-        height: 25px; /* Kleinere Titel */
+        height: 25px; 
     }
 
     .attack-keys {
-        gap: 8px;     /* Kleinerer Abstand zwischen Attack-Keys */
+        gap: 8px;     
     }
 
     .back-btn {
         margin-top: 20px;
-        padding: 8px 16px;  /* Kleinerer Button */
+        padding: 8px 16px;  
         font-size: 16px;
     }
 }
@@ -390,4 +388,159 @@ h1{
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
+}
+
+.rotate-device {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 50, 0.9);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+}
+
+.rotate-device img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    animation: rotate 2s infinite;
+}
+
+.rotate-device p {
+    color: white;
+    font-family: 'luckiest-guy';
+    font-size: 24px;
+    margin: 10px;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(90deg); }
+    100% { transform: rotate(90deg); }
+}
+
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    .rotate-device {
+        display: flex;
+    }
+    
+    canvas, .start-screen {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    h1 {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    h1 {
+        display: none;
+    }
+}
+
+@media screen and (max-height: 480px) {
+    h1 {
+        display: none;
+    }
+}
+
+/* Mobile Controls Styling */
+.mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    justify-content: space-between;
+    pointer-events: none; 
+    z-index: 1; 
+}
+
+.movement-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.control-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.control-row:first-child {
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.mobile-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(127, 255, 224, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: white;
+    font-family: 'luckiest-guy';
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.action-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.action-controls .mobile-btn {
+    width: 80px;
+    height: 80px;
+    font-size: 16px;
+}
+
+.mobile-btn:active {
+    transform: scale(0.95);
+    background-color: rgba(127, 255, 224, 0.8);
+}
+
+/* Nur im Landscape-Modus UND wenn .show-controls Klasse vorhanden */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .mobile-controls.show-controls {
+        display: flex;
+    }
+}
+
+/* Einzelne Buttons können weiterhin geklickt werden */
+.movement-controls, .action-controls {
+    pointer-events: auto;
+}
+
+/* Game Over/Victory Screen Buttons müssen einen höheren z-index haben */
+.game-over-screen, .victory-screen {
+    z-index: 2;
+    pointer-events: auto;
+}
+
+/* Stelle sicher, dass der Try Again Button klickbar ist */
+.try-again-btn, .restart-btn {
+    pointer-events: auto;
+    z-index: 3;
+    position: relative;
 }

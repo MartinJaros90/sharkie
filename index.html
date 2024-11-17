@@ -17,6 +17,12 @@
     <!-- Audio Manager -->
     <script src="./models/audio-manager.class.js"></script>
 
+     <!-- Game Over -->
+    <script src="./models/game-over.class.js"></script>
+
+    <!-- Animation Manager -->
+<script src="./models/character-animation-manager.class.js"></script>
+
     <!-- Charakter und Gegner-Basis -->
     <script src="./models/character.class.js"></script>
     <script src="./models/enemy.class.js"></script>
@@ -49,6 +55,9 @@
 
     <!-- Level-Daten -->
     <script src="./levels/level1.js"></script>
+
+     <!-- Mobile Controls -->
+    <script src="./models/mobile-controls.js"></script>
 
     <!-- World und Game zuletzt -->
     <script src="./models/world.class.js"></script>
@@ -101,6 +110,32 @@
                 <div class="loading-bar"></div>
             </div>
             <div class="loading-text">Loading...</div>
+        </div>
+    </div>
+
+    <div class="rotate-device">
+        <img src="img/rotate-device.png" alt="Rotate Device">
+        <p>Please rotate your device</p>
+        <p>For the best experience!</p>
+    </div>
+
+    <div class="mobile-controls">
+        <div class="movement-controls">
+            <!-- Erste Reihe: Nur Pfeil nach oben -->
+            <div class="control-row">
+                <button class="mobile-btn up-btn">↑</button>
+            </div>
+            <!-- Zweite Reihe: Links, Runter, Rechts -->
+            <div class="control-row">
+                <button class="mobile-btn left-btn">←</button>
+                <button class="mobile-btn down-btn">↓</button>
+                <button class="mobile-btn right-btn">→</button>
+            </div>
+        </div>
+        
+        <div class="action-controls">
+            <button class="mobile-btn bubble-btn">BUBBLE</button>
+            <button class="mobile-btn slap-btn">SLAP</button>
         </div>
     </div>
 

@@ -11,8 +11,8 @@ class CoinBar extends StatusBar {
     x = 40;
     y = 40;
 
-    totalCoins = 18;  // Gesamtanzahl der Coins im Level
-    collectedCoins = 0;  // Zähler für eingesammelte Coins
+    totalCoins = 18;  
+    collectedCoins = 0;  
 
     constructor() {
         super();
@@ -22,14 +22,12 @@ class CoinBar extends StatusBar {
 
     coinCollected() {
         this.collectedCoins++;
-        // Berechne Prozentsatz basierend auf gesammelten Coins
         let percentage = (this.collectedCoins / this.totalCoins) * 100;
         this.setPercentage(percentage);
-        console.log(`Coins collected: ${this.collectedCoins}/${this.totalCoins} (${percentage}%)`);
     }
 
     setPercentage(percentage) {
-        this.percentage = percentage; // Speichere den aktuellen Prozentsatz
+        this.percentage = percentage; 
         let imagePath = this.IMAGES[this.resolveImageIndex()];
         this.img = this.imageCache[imagePath];
     }
@@ -43,6 +41,5 @@ class CoinBar extends StatusBar {
         else return 0;
     }
 
-    
 }
 

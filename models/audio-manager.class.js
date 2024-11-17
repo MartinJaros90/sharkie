@@ -28,7 +28,7 @@ class AudioManager {
     }
 
     static startBackgroundMusic() {
-        if (!this.muted) {  // Nur abspielen wenn nicht stumm
+        if (!this.muted) {
             this.sounds.background.play();
         }
     }
@@ -43,7 +43,7 @@ class AudioManager {
     }
 
     static play(soundName) {
-        if (this.sounds[soundName] && !this.muted) {  // Prüfe muted Status
+        if (this.sounds[soundName] && !this.muted) { 
             this.sounds[soundName].play();
         }
     }
@@ -68,18 +68,25 @@ class AudioManager {
     }
 
     static muteAll() {
-        this.muted = true;  // Setze den globalen Mute-Status
+        this.muted = true; 
         Object.values(this.sounds).forEach(sound => {
             sound.muted = true;
         });
-        this.pauseBackgroundMusic();  // Pausiere die Hintergrundmusik
+        this.pauseBackgroundMusic();  
     }
 
     static unmuteAll() {
-        this.muted = false;  // Setze den globalen Mute-Status
+        this.muted = false;  
         Object.values(this.sounds).forEach(sound => {
             sound.muted = false;
         });
-        this.startBackgroundMusic();  // Starte die Hintergrundmusik
+        this.startBackgroundMusic();  
+    }
+
+    static stopAll() {
+        Object.values(this.sounds).forEach(sound => {
+            sound.pause();
+            sound.currentTime = 0;
+        });
     }
 }

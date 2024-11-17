@@ -1,10 +1,8 @@
 class World {
 
     character = new Character();
-
     canvasWidth = 720;  
     canvasHeight = 480;
-
     canvas;
     ctx;
     keyboard;
@@ -19,21 +17,17 @@ class World {
     coins = [];
     remainingPoisonBubbles = 0;
     gameIsRunning = false;
-    level; // Neue Variable für das Level
+    level; 
     
-    
-
-
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
         this.character = new Character();
-        // Nur Hintergrund initialisieren
         this.level = new Level([], [], createBackground());
         this.setWorld();
         AudioManager.init();
-        this.draw(); // Startet den Render-Loop
+        this.draw(); 
     }
 
     startGame() {
@@ -44,7 +38,6 @@ class World {
         this.setWorld();
         this.run();
     }
-
 
     setWorld() {
         this.character.world = this;
@@ -77,7 +70,6 @@ run() {
     }, 200);
 }
 
-
 checkThrowObjects() {
     if (this.keyboard.P && this.collectedPoisons > 0) {
         let poisonBubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
@@ -88,10 +80,10 @@ checkThrowObjects() {
 }  
 
 checkSpaceThrow() {
-    if (this.keyboard.SPACE && !this.character.throwAnimationInterval && this.character.canThrow) {
+    if (this.keyboard.SPACE && this.character.canThrow) {
         this.character.startThrowAnimation(() => {
             let bubble;
-            const isMovingLeft = this.character.otherDirection;  // Richtung des Characters
+            let isMovingLeft = this.character.otherDirection;  
             
             if (this.remainingPoisonBubbles > 0) {
                 bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100, isMovingLeft);
@@ -107,7 +99,6 @@ checkSpaceThrow() {
         });
     }
 }
-
  
 checkCollisions() {
     this.level.enemies.forEach((enemy) => { 
@@ -170,7 +161,6 @@ playElectroShockSound() {
     }, 200);
 }
 
-
 checkCharacterCoinCollision() {
     this.coins.forEach((coin) => {  
         if (!coin.isCollected && this.character.isColliding(coin)) {
@@ -182,7 +172,6 @@ checkCharacterCoinCollision() {
     });
 }
 
-
 checkCharacterPoisonCollision() {
     this.poisons.forEach((poison) => {
         if (!poison.isCollected && this.character.isColliding(poison)) {
@@ -193,35 +182,16 @@ checkCharacterPoisonCollision() {
             this.remainingPoisonBubbles++;
             
             poison.isCollected = true;
-            AudioManager.play('poison');  // Hier wird der Poison-Sound abgespielt
+            AudioManager.play('poison'); 
         }
     });
 }
-    
-// checkBubbleEnemyCollision() {
-//     this.throwableObject.forEach((bubble, bubbleIndex) => {
-//         this.level.enemies.forEach((enemy, enemyIndex) => {
-//             // Prüfen, ob es eine Gift-Bubble ist und ob sie eine Kollision mit dem Gegner hat
-//             if (bubble instanceof PoisonBubble && bubble.hasSimpleCollisionWith(enemy)) {
-//                 // Entferne die Gift-Bubble nach der Kollision
-//                 this.throwableObject.splice(bubbleIndex, 1);
-
-//                 // Gegner-Entfernung nur bei Gift-Bubbles
-//                 enemy.playHitAnimation(() => {
-//                     this.level.enemies.splice(enemyIndex, 1); // Entferne den Gegner aus dem Spiel
-//                 });
-//             }
-//             // Wenn es eine NormalBubble ist, passiert nichts
-//         });
-//     });
-// }
-
     
 checkBubbleEnemyCollision() {
     this.throwableObject.forEach((bubble, bubbleIndex) => {
         this.level.enemies.forEach((enemy, enemyIndex) => {
             if (bubble.hasSimpleCollisionWith(enemy)) {
-                if (bubble instanceof PoisonBubble) {  // Nur bei PoisonBubble!
+                if (bubble instanceof PoisonBubble) { 
                     this.throwableObject.splice(bubbleIndex, 1);
                     
                     if (enemy instanceof Endboss) {
@@ -260,18 +230,15 @@ startKnockbackAnimation(enemy) {
     }, 1000 / 60);
 }
 
-
-
 draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Hintergrund immer zeichnen
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObjects);
     this.ctx.translate(-this.camera_x, 0);
 
-    if (this.gameIsRunning) {  // Nur wenn das Spiel läuft
-        // ----- Space for fixed objects -----//
+    if (this.gameIsRunning) { 
+
         this.addToMap(this.statusBar);
         this.addToMap(this.coinBar);
         this.addToMap(this.poisonBar);
@@ -303,7 +270,6 @@ draw() {
         }
 
         mo.draw(this.ctx);
-        // mo.drawFrame(this.ctx);
 
         if (mo.otherDirection) {
             this.flipImageBack(mo);
@@ -321,7 +287,5 @@ draw() {
         mo.x = mo.x * -1;
         this.ctx.restore();
     }
-
-    
     
 }
