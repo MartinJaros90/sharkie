@@ -337,6 +337,7 @@ class Endboss extends MovableObject{
      */
     startVictorySequence() {
         AudioManager.stopAll();
+        AudioManager.play('victory'); 
         hideMobileControls();
         
         setTimeout(() => {
