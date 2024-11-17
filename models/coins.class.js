@@ -10,6 +10,12 @@ class Coin extends MovableObject {
         'img/4. Marcadores/1. Coins/4.png'
     ];
 
+    /**
+     * Creates a new coin at specified position
+     * @constructor
+     * @param {number} x - The initial x coordinate
+     * @param {number} y - The initial y coordinate
+     */
     constructor(x, y) {
         super().loadImage('img/4. Marcadores/1. Coins/1.png');
         this.loadImages(this.IMAGES_SWIMM);
@@ -18,6 +24,10 @@ class Coin extends MovableObject {
         this.animate();
     }
 
+    /**
+     * Starts the coin's animation loop
+     * Handles movement and spinning animation if not collected
+     */
     animate() {
         this.moveLeft();
 
@@ -28,6 +38,10 @@ class Coin extends MovableObject {
         }, 200);
     }
 
+    /**
+     * Handles coin collection animation
+     * Makes the coin fly upward and disappear after collection
+     */
     collect() {
         this.isCollected = true; 
         let flyUpInterval = setInterval(() => {

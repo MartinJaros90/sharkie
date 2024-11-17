@@ -11,6 +11,11 @@ class EndbossStatusBar extends StatusBar {
         'img/4. Marcadores/green/Life/100_  copia 2.png'
     ];
 
+    /**
+     * Creates a new end boss status bar
+     * Initializes position, size and sets initial health to 100%
+     * @constructor
+     */
     constructor() {
         super();
         this.x = 480; 

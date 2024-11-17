@@ -1,5 +1,10 @@
 
 class GameOver {
+
+    /**
+     * Creates a new game over screen instance
+     * @param {World} world - The game world instance
+     */
     constructor(world) {
         this.world = world;
         this.canvas = world.canvas;
@@ -103,6 +108,12 @@ class GameOver {
         return this.isPointInButton(x, y, buttonDimensions);
     }
     
+    /**
+     * Checks if the mouse is hovering over the restart button
+     * @param {MouseEvent} event - The mouse event
+     * @param {HTMLImageElement} gameOverImage - The game over screen image
+     * @returns {boolean} Whether the mouse is hovering over the button
+     */
     isButtonHovered(event, gameOverImage) {
         let { x, y } = this.getMousePosition(event);
         let buttonDimensions = this.getButtonDimensions(gameOverImage);
@@ -136,6 +147,13 @@ class GameOver {
         return { buttonX, buttonY, buttonWidth, buttonHeight };
     }
     
+    /**
+     * Checks if a point is within the button boundaries
+     * @param {number} x - The x coordinate to check
+     * @param {number} y - The y coordinate to check
+     * @param {Object} dimensions - The button dimensions and position
+     * @returns {boolean} Whether the point is inside the button
+     */
     isPointInButton(x, y, { buttonX, buttonY, buttonWidth, buttonHeight }) {
         return x >= buttonX && x <= buttonX + buttonWidth &&
                y >= buttonY && y <= buttonY + buttonHeight;
@@ -213,12 +231,20 @@ class GameOver {
         this.ctx.fill();
     }
     
+    /**
+     * Draws the border of the restart button
+     * @param {Object} dimensions - The button dimensions and position
+     */
     drawButtonBorder({ buttonX, buttonY, buttonWidth, buttonHeight }) {
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
     }
     
+    /**
+     * Applies shadow effects to the button based on hover state
+     * @param {boolean} isHovered - Whether the button is being hovered over
+     */
     drawButtonShadow(isHovered) {
         if (isHovered) {
             this.ctx.shadowColor = 'rgba(127, 255, 224, 0.8)';
@@ -232,6 +258,10 @@ class GameOver {
         this.ctx.shadowOffsetX = 0;
     }
     
+    /**
+     * Draws the border of the restart button
+     * @param {Object} dimensions - The button dimensions and position
+     */
     drawButtonText({ buttonX, buttonY, buttonHeight }, isHovered) {
         this.ctx.font = "22px 'luckiest-guy'";
         this.ctx.fillStyle = isHovered ? '#1a0f0a' : '#2c1810';

@@ -12,12 +12,20 @@ class PoisonBar extends StatusBar {
     x = 40;
     y = 80;
 
+    /**
+     * Creates a new poison bar and initializes it to 0%
+     * @constructor
+     */
     constructor() {
         super();
         this.loadImages(this.IMAGES);
         this.setPercentage(0);  
     }
 
+    /**
+     * Increases poison level when poison is collected
+     * Increases by 20% and caps at 100%
+     */
     poisonCollected() {
         this.percentagePoison += 20;  
         if (this.percentagePoison > 100) {
@@ -26,6 +34,10 @@ class PoisonBar extends StatusBar {
         this.setPercentage(this.percentagePoison);  
     }
 
+    /**
+     * Decreases poison level when poison bubble is thrown
+     * Decreases by 20% and caps at 0%
+     */
     poisonThrown() {
         this.percentagePoison -= 20;  
         if (this.percentagePoison < 0) {

@@ -15,6 +15,10 @@ class Posion extends MovableObject {
         'img/4. Marcadores/Posión/Animada/8.png'
     ];
 
+    /**
+     * Creates a new poison item at a random x position
+     * @constructor
+     */
     constructor() {
         super().loadImage(this.IMAGES_SWIMM[0]);
         this.loadImages(this.IMAGES_SWIMM);
@@ -23,6 +27,10 @@ class Posion extends MovableObject {
         this.animate();
     }
 
+    /**
+     * Starts the poison item's animation
+     * Handles movement and floating animation if not collected
+     */
     animate() {
         this.moveLeft();
 
@@ -33,6 +41,10 @@ class Posion extends MovableObject {
         }, 200);
     }
 
+    /**
+     * Handles collection animation
+     * Makes the poison item fly upward and disappear after collection
+     */
     collect() {
         this.isCollected = true;  
         let flyUpInterval = setInterval(() => {

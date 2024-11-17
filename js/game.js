@@ -47,6 +47,9 @@ function startGame() {
     }
 }
 
+/**
+ * Hides the mobile controls UI element
+ */
 function hideMobileControls() {
     document.querySelector('.mobile-controls').style.display = 'none';
 }
@@ -98,11 +101,20 @@ function loadSharkieImage() {
     return img;
 }
 
+/**
+ * Draws the loading background on the canvas
+ * @param {CanvasRenderingContext2D} ctx - The canvas rendering context
+ */
 function drawLoadingBackground(ctx) {
     ctx.fillStyle = 'rgba(0, 0, 50, 0.9)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+/**
+ * Draws the Sharkie character on the loading screen with bounce animation
+ * @param {Object} state - The current loading state object
+ * @param {HTMLImageElement} sharkieImg - The Sharkie image element to draw
+ */
 function drawSharkieCharacter(state, sharkieImg) {
     if (sharkieImg.complete) {
         let elapsedTime = Date.now() - state.startTime;
@@ -118,6 +130,10 @@ function drawSharkieCharacter(state, sharkieImg) {
     }
 }
 
+/**
+ * Draws the complete loading bar including background and progress
+ * @param {Object} state - The current loading state object
+ */
 function drawLoadingBar(state) {
     drawLoadingBarBackground(state.ctx);
     drawLoadingBarProgress(state);
@@ -133,6 +149,10 @@ function drawLoadingBarBackground(ctx) {
     ctx.fill();
 }
 
+/**
+ * Draws the loading bar progress
+ * @param {Object} state - The current loading state object containing context and progress
+ */
 function drawLoadingBarProgress(state) {
     state.ctx.fillStyle = '#4e9fff';
     state.ctx.beginPath();
@@ -146,6 +166,10 @@ function drawLoadingBarProgress(state) {
     state.ctx.fill();
 }
 
+/**
+ * Draws the loading text on the canvas
+ * @param {CanvasRenderingContext2D} ctx - The canvas rendering context
+ */
 function drawLoadingText(ctx) {
     ctx.fillStyle = 'white';
     ctx.font = '24px "luckiest-guy"';
@@ -183,11 +207,17 @@ function toggleSound() {
     }
 }
 
+/**
+ * Shows the game instructions screen and hides the main menu
+ */
 function showInstructions() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('instructions').style.display = 'flex';
 }
 
+/**
+ * Hides the instructions screen and shows the main menu
+ */
 function hideInstructions() {
     document.getElementById('instructions').style.display = 'none';
     document.getElementById('main-menu').style.display = 'flex';
@@ -215,7 +245,7 @@ window.addEventListener("keydown", (e) => {
     }
 
     if (e.keyCode == 32) {
-        keyboard.SPACE  = true;
+        keyboard.SPACE = true;
     }
 
      if (e.keyCode == 68) {

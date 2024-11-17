@@ -10,6 +10,10 @@ class EnemyPink extends MovableObject {
         'img/2.Enemy/1.Puffer fish (3 color options)/2.transition/3.transition5.png'
     ];
 
+    /**
+     * Creates a new pink puffer fish with random position and speed
+     * @constructor
+     */
     constructor() {
         super().loadImage(this.IMAGES_SWIMM[0]);
         this.loadImages(this.IMAGES_SWIMM);
@@ -21,6 +25,10 @@ class EnemyPink extends MovableObject {
         this.speed = 0.35 + Math.random() * 0.5;
     }
 
+    /**
+     * Starts the enemy's animation loops
+     * Handles continuous left movement and swimming animation
+     */
     animate() {
          setInterval(() => {
             this.moveLeft();

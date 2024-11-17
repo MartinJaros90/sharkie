@@ -10,6 +10,10 @@ class EnemyBubble extends MovableObject {
         'img/2.Enemy/1.Puffer fish (3 color options)/3.Bubbleeswim/2.bubbleswim5.png',
     ];
 
+    /**
+     * Creates a new bubble enemy with random position and speed
+     * @constructor
+     */
     constructor() {
         super().loadImage(this.IMAGES_SWIMM[0]);
         this.loadImages(this.IMAGES_SWIMM);
@@ -21,7 +25,10 @@ class EnemyBubble extends MovableObject {
         this.speed = 0.65 + Math.random() * 0.5;
     }
 
-
+    /**
+     * Starts the enemy's animation loops
+     * Handles continuous left movement and swimming animation
+     */
     animate() {
           setInterval(() => {
             this.moveLeft();

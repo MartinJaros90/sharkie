@@ -69,6 +69,9 @@ class CharacterAnimationManager {
         }, 1000 / 30);
     }
 
+    /**
+     * Clears all idle-related animation intervals and timeouts
+     */
     clearIdleAnimations() {
         clearInterval(this.idleInterval);
         clearInterval(this.longIdleInterval);
@@ -116,31 +119,36 @@ class CharacterAnimationManager {
      * @param {Function} callback - Function to be called when throw animation reaches frame 4
      */
     startThrowAnimation(callback) {
-        if (!this.character.canThrow || this.throwAnimationInterval) return;
-
-        this.character.canThrow = false;
-        this.character.currentImage = 0;
+        if (this.throwAnimationInterval) return;
+    
+        let currentFrame = 0;
+        let ANIMATION_FRAMES = this.character.IMAGES_THROW.length;
+        let FRAME_TIME = 50; 
+        let COOLDOWN = 500; 
         
         this.throwAnimationInterval = setInterval(() => {
-            this.character.playAnimation(this.character.IMAGES_THROW);
-            
-            if (this.character.currentImage === 4) {
-                if (callback) {
-                    callback(this.character.otherDirection);
-                    AudioManager.play('bubble');
-                }
+
+            this.character.img = this.character.imageCache[this.character.IMAGES_THROW[currentFrame]];
+
+            if (currentFrame === 4 && callback) {
+                callback(this.character.otherDirection);
+                AudioManager.play('bubble');
             }
             
-            if (this.character.currentImage >= this.character.IMAGES_THROW.length) {
-                this.endThrowAnimation();
-                
+            currentFrame++;
+            if (currentFrame >= ANIMATION_FRAMES) {
+                clearInterval(this.throwAnimationInterval);
+                this.throwAnimationInterval = null;
                 setTimeout(() => {
                     this.character.canThrow = true;
-                }, this.character.bubbleCooldown); 
+                }, COOLDOWN);
             }
-        }, 1000 / 25); 
+        }, FRAME_TIME);
     }
 
+    /**
+     * Ends the throw animation sequence and clears its interval
+     */
     endThrowAnimation() {
         clearInterval(this.throwAnimationInterval);
         this.throwAnimationInterval = null;

@@ -1,5 +1,9 @@
 let level1; 
 
+/**
+ * Initializes and returns the first level of the game
+ * @returns {Level} The initialized level object
+ */
 function initLevel() {
     level1 = new Level(
         createEnemies(),
@@ -9,6 +13,10 @@ function initLevel() {
     return level1;
 }
 
+/**
+ * Creates and returns an array of enemy objects for the level
+ * @returns {Array<MovableObject>} Array containing all enemy instances
+ */
 function createEnemies() {
     let enemies = [];
     
@@ -36,6 +44,10 @@ function createEnemies() {
     return enemies;
 }
 
+/**
+ * Creates and returns an array of collectible objects for the level
+ * @returns {Array<MovableObject>} Array containing all collectible instances
+ */
 function createCollectibles() {
     let collectibles = [];
     
@@ -46,10 +58,19 @@ function createCollectibles() {
     
     createPoisonPattern(collectibles, 800, 380, 3, 'spaced');
     createPoisonPattern(collectibles, 1600, 350, 2, 'stacked');
+    createPoisonPattern(collectibles, 1600, 350, 2, 'stacked');
     
     return collectibles;
 }
 
+/**
+ * Creates a pattern of coins at specified position
+ * @param {Array} collectibles - Array to store the collectible objects
+ * @param {number} startX - Starting X coordinate for the pattern
+ * @param {number} startY - Starting Y coordinate for the pattern
+ * @param {number} count - Number of coins to create
+ * @param {string} pattern - Pattern type ('vertical'|'circle'|'zigzag'|'triangle')
+ */
 function createCoinPattern(collectibles, startX, startY, count, pattern) {
     for (let i = 0; i < count; i++) {
         let x, y;
@@ -87,6 +108,14 @@ function createCoinPattern(collectibles, startX, startY, count, pattern) {
     }
 }
 
+/**
+ * Creates a pattern of poison bottles
+ * @param {Array} collectibles - Array to store the collectible objects
+ * @param {number} startX - Starting X coordinate for the pattern
+ * @param {number} startY - Starting Y coordinate for the pattern
+ * @param {number} count - Number of poison bottles to create
+ * @param {string} pattern - Pattern type ('spaced'|'stacked')
+ */
 function createPoisonPattern(collectibles, startX, startY, count, pattern = 'spaced') {
     switch(pattern) {
         case 'spaced':
@@ -102,6 +131,10 @@ function createPoisonPattern(collectibles, startX, startY, count, pattern = 'spa
     }
 }
 
+/**
+ * Creates and returns an array of background objects for the level
+ * @returns {Array<BackgroundObject>} Array containing all background layer instances
+ */
 function createBackground() {
     return [
         new BackgroundObject('img/3. Background/Layers/5. Water/L2.png', -720),

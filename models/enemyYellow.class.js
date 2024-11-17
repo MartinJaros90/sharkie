@@ -15,6 +15,10 @@ class EnemyYellow extends MovableObject {
         'img/2.Enemy/2 Jelly fish/Dead/Yellow/y4.png'
     ];
 
+    /**
+     * Creates a new yellow jellyfish enemy with random position and speed
+     * @constructor
+     */
     constructor() {
         super().loadImage(this.IMAGES_SWIMM[0]);
         this.loadImages(this.IMAGES_SWIMM);
@@ -28,7 +32,10 @@ class EnemyYellow extends MovableObject {
         this.speed = 0.15 + Math.random() * 0.2;
     }
 
-
+    /**
+     * Starts the jellyfish's animation loops
+     * Handles continuous left movement and swimming animation
+     */
     animate() {
           setInterval(() => {
             this.moveLeft();
@@ -39,6 +46,10 @@ class EnemyYellow extends MovableObject {
         }, 200);
     }
 
+    /**
+     * Plays the death animation when jellyfish is hit
+     * @param {Function} [callback] - Optional callback function to execute after animation completes
+     */
     playHitAnimation(callback) {
         this.currentImage = 0;
         let interval = setInterval(() => {
@@ -46,7 +57,7 @@ class EnemyYellow extends MovableObject {
 
             if (this.currentImage >= this.IMAGES_HIT.length) {
                 clearInterval(interval);
-                if (callback) callback(); // Gegner entfernen
+                if (callback) callback(); 
             }
         }, 1000 / 30);
     }

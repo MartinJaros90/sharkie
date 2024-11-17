@@ -19,6 +19,12 @@ class World {
     gameIsRunning = false;
     level; 
     
+    /**
+     * Creates a new game world
+     * @constructor
+     * @param {HTMLCanvasElement} canvas - The game canvas element
+     * @param {Object} keyboard - The keyboard input handler
+     */
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
@@ -42,6 +48,9 @@ class World {
         this.run();
     }
 
+    /**
+     * Sets up references between world and game objects
+     */
     setWorld() {
         this.character.world = this;
         this.cooldownDisplay.setWorld(this);
@@ -76,125 +85,163 @@ run() {
     }, 200);
 }
 
-checkThrowObjects() {
-    if (this.keyboard.P && this.collectedPoisons > 0) {
-        let poisonBubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
-        this.throwableObject.push(poisonBubble);
-        this.collectedPoisons--;
-        this.poisonBar.poisonThrown();
-    }
-}  
+    /**
+     * Handles throwing of poison bubbles
+     */
+    checkThrowObjects() {
+        if (this.keyboard.P && this.collectedPoisons > 0) {
+            let poisonBubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
+            this.throwableObject.push(poisonBubble);
+            this.collectedPoisons--;
+            this.poisonBar.poisonThrown();
+        }
+    }  
 
-checkSpaceThrow() {
-    if (this.keyboard.SPACE && this.character.canThrow) {
-        this.character.startThrowAnimation(() => {
-            let bubble;
-            let isMovingLeft = this.character.otherDirection;  
+     /**
+     * Handles throwing of normal bubbles
+     */
+    checkSpaceThrow() {
+        if (this.keyboard.SPACE && this.character.canThrow) {
+            this.character.canThrow = false; 
             
-            if (this.remainingPoisonBubbles > 0) {
-                bubble = new PoisonBubble(this.character.x + 100, this.character.y + 100, isMovingLeft);
-                this.remainingPoisonBubbles--;
-                this.poisonBar.poisonThrown();
-                AudioManager.play('bubble');  
-            } else {
-                bubble = new NormalBubble(this.character.x + 100, this.character.y + 100, isMovingLeft);
-                AudioManager.play('bubble'); 
+            this.character.startThrowAnimation(() => {
+                let bubbleX = this.character.otherDirection ? 
+                    this.character.x : 
+                    this.character.x + this.character.width;
+                
+                let bubbleY = this.character.y + this.character.height * 0.4;
+                
+                if (this.remainingPoisonBubbles > 0) {
+                    let bubble = new PoisonBubble(bubbleX, bubbleY, this.character.otherDirection);
+                    this.throwableObject.push(bubble);
+                    this.remainingPoisonBubbles--;
+                    this.poisonBar.poisonThrown();
+                } else {
+                    let bubble = new NormalBubble(bubbleX, bubbleY, this.character.otherDirection);
+                    this.throwableObject.push(bubble);
+                }
+            });
+        }
+    }
+ 
+    /**
+     * Checks for collisions between character and enemies
+     */
+    checkCollisions() {
+        this.level.enemies.forEach((enemy) => { 
+            if (this.shouldHandleCollision(enemy)) {
+                this.handleCollision(enemy);
             }
-
-            this.throwableObject.push(bubble);
         });
     }
-}
- 
-/**
- * Checks for collisions between character and enemies
- */
-checkCollisions() {
-    this.level.enemies.forEach((enemy) => { 
-        if (this.shouldHandleCollision(enemy)) {
-            this.handleCollision(enemy);
-        }
-    });
-}
 
-shouldHandleCollision(enemy) {
-    return this.character.isColliding(enemy) && 
-           !this.character.isHurt() && 
-           !this.character.isDead() &&
-           (!enemy.isTrappedInBubble || enemy instanceof Endboss) && 
-           !enemy.isDead();
-}
-
-handleCollision(enemy) {
-    if (enemy instanceof Endboss) {
-        this.handleEndbossCollision();
-    } else {
-        this.handleNormalEnemyCollision(enemy);
+        /**
+     * Determines if a collision should be handled
+     * @param {MovableObject} enemy - The enemy to check
+     * @returns {boolean} Whether the collision should be handled
+     */
+    shouldHandleCollision(enemy) {
+        return this.character.isColliding(enemy) && 
+            !this.character.isHurt() && 
+            !this.character.isDead() &&
+            (!enemy.isTrappedInBubble || enemy instanceof Endboss) && 
+            !enemy.isDead();
     }
-}
 
-handleEndbossCollision() {
-    this.character.hit();
-    this.statusBar.setPercentage(this.character.energy);
-    AudioManager.play('hurt');
-}
+        /**
+     * Handles collision with an enemy
+     * @param {MovableObject} enemy - The enemy involved in the collision
+     */
+    handleCollision(enemy) {
+        if (enemy instanceof Endboss) {
+            this.handleEndbossCollision();
+        } else {
+            this.handleNormalEnemyCollision(enemy);
+        }
+    }
 
-handleNormalEnemyCollision(enemy) {
-    if (this.character.checkElectroShock(enemy)) {
-        this.handleElectroShock();
-    } else {
+    
+    /**
+     * Handles collision with the endboss
+     */
+    handleEndbossCollision() {
+        this.character.hit();
+        this.statusBar.setPercentage(this.character.energy);
         AudioManager.play('hurt');
     }
-    this.character.hit();
-    this.statusBar.setPercentage(this.character.energy);
-}
 
-handleElectroShock() {
-    this.character.isElectrocuted = true;
-    this.playElectroShockSound();
-    
-    setTimeout(() => {
-        this.character.isElectrocuted = false;
-    }, 1000);
-}
-
-playElectroShockSound() {
-    AudioManager.play('shock');
-    
-    let shockSoundInterval = setInterval(() => {
-        if (this.character.isElectrocuted) {
-            AudioManager.play('shock');
+       /**
+     * Handles collision with normal enemies
+     * @param {MovableObject} enemy - The enemy involved in the collision
+     */
+    handleNormalEnemyCollision(enemy) {
+        if (this.character.checkElectroShock(enemy)) {
+            this.handleElectroShock();
         } else {
-            clearInterval(shockSoundInterval);
+            AudioManager.play('hurt');
         }
-    }, 200);
-}
+        this.character.hit();
+        this.statusBar.setPercentage(this.character.energy);
+    }
 
-checkCharacterCoinCollision() {
-    this.coins.forEach((coin) => {  
-        if (!coin.isCollected && this.character.isColliding(coin)) {
-            coin.collect();  
-            this.coinBar.coinCollected();  
-            coin.isCollected = true;
-            AudioManager.play('coin'); 
-        }
-    });
-}
+        /**
+     * Handles electro shock effect on character
+     */
+    handleElectroShock() {
+        this.character.isElectrocuted = true;
+        this.playElectroShockSound();
+        
+        setTimeout(() => {
+            this.character.isElectrocuted = false;
+        }, 1000);
+    }
 
-checkCharacterPoisonCollision() {
-    this.poisons.forEach((poison) => {
-        if (!poison.isCollected && this.character.isColliding(poison)) {
-            poison.collect();
-            this.poisonBar.poisonCollected();
-            
-            this.collectedPoisons++;
-            this.remainingPoisonBubbles++;
-            
-            poison.isCollected = true;
-            AudioManager.play('poison'); 
-        }
-    });
-}
+        /**
+     * Plays electro shock sound effect
+     */
+    playElectroShockSound() {
+        AudioManager.play('shock');
+        
+        let shockSoundInterval = setInterval(() => {
+            if (this.character.isElectrocuted) {
+                AudioManager.play('shock');
+            } else {
+                clearInterval(shockSoundInterval);
+            }
+        }, 200);
+    }
+
+       /**
+     * Checks for collisions between character and coins
+     */
+    checkCharacterCoinCollision() {
+        this.coins.forEach((coin) => {  
+            if (!coin.isCollected && this.character.isColliding(coin)) {
+                coin.collect();  
+                this.coinBar.coinCollected();  
+                coin.isCollected = true;
+                AudioManager.play('coin'); 
+            }
+        });
+    }
+
+        /**
+     * Checks for collisions between character and poison bottles
+     */
+    checkCharacterPoisonCollision() {
+        this.poisons.forEach((poison) => {
+            if (!poison.isCollected && this.character.isColliding(poison)) {
+                poison.collect();
+                this.poisonBar.poisonCollected();
+                
+                this.collectedPoisons++;
+                this.remainingPoisonBubbles++;
+                
+                poison.isCollected = true;
+                AudioManager.play('poison'); 
+            }
+        });
+    }
     
 /**
  * Checks for collisions between bubbles and enemies
@@ -277,6 +324,10 @@ draw() {
     requestAnimationFrame(() => this.draw());
 }
 
+    /**
+     * Adds multiple objects to the game map
+     * @param {Array<MovableObject>} objects - Array of objects to add
+     */
     addObjectsToMap(objects){
         objects.forEach(o => {
             this.addToMap(o);
@@ -299,6 +350,10 @@ draw() {
         }
     }
 
+        /**
+     * Flips an image horizontally
+     * @param {MovableObject} mo - The object to flip
+     */
     flipImage(mo) {
         this.ctx.save();
         this.ctx.translate(mo.width, 0);
@@ -306,6 +361,10 @@ draw() {
         mo.x = mo.x * -1;
     }
 
+    /**
+     * Restores the original image orientation
+     * @param {MovableObject} mo - The object to restore
+     */
     flipImageBack(mo) {
         mo.x = mo.x * -1;
         this.ctx.restore();

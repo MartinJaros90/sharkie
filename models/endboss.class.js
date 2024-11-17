@@ -13,7 +13,7 @@ class Endboss extends MovableObject{
     isAttacking = false;
     attackCooldown = 1500; 
     lastAttack = 0;
-    speed = 3; 
+    speed = 2; 
     introduceFinished = false;
     hadFirstContact = false;
     visible = false;
@@ -83,6 +83,10 @@ class Endboss extends MovableObject{
     ];
 
 
+    /**
+     * Initializes the endboss with images and starts animation
+     * @constructor
+     */
     constructor() {
         super();
         this.loadImages(this.IMAGES_SWIMM);
@@ -170,6 +174,9 @@ class Endboss extends MovableObject{
         }
     }
     
+    /**
+     * Plays the boss introduction animation sequence
+     */
     playIntroAnimation() {
         this.currentImage = 0;
         this.visible = true;
@@ -241,6 +248,9 @@ class Endboss extends MovableObject{
         }
     }
 
+    /**
+     * Checks and handles vertical direction changes
+     */
     checkDirectionChange() {
         let currentTime = new Date().getTime();
         if (currentTime - this.lastDirectionChange > this.directionChangeInterval) {
@@ -305,6 +315,9 @@ class Endboss extends MovableObject{
         }, attackDuration);
     }
 
+    /**
+     * Initiates floating animation after death
+     */
     startDeadFloating() {
         let time = 0;
         this.deadFloatingInterval = setInterval(() => {
@@ -365,7 +378,6 @@ class Endboss extends MovableObject{
                 ctx.fillStyle = `rgba(0, 0, 50, ${Math.min(alpha * 0.5, 0.7)})`;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Überprüfe ob das Bild vollständig geladen ist
                 if (victoryImage.complete && victoryImage.naturalWidth !== 0) {
                     let imgWidth = canvas.width * 0.6 * (scale >= 1 ? 1 : scale);
                     let imgHeight = (imgWidth * victoryImage.height) / victoryImage.width;
@@ -383,24 +395,16 @@ class Endboss extends MovableObject{
                     }
                     ctx.restore();
                 }
-    
                 if (alpha < 1) {
                     alpha = Math.min(alpha + 0.01, 1);
                 }
                 if (scale < 1) {
                     scale = Math.min(scale + 0.02, 1);
                 }
-                
                 time += 0.02; 
-                
                 requestAnimationFrame(animate);
             };
-            
             animate();
-        };
-    
-        victoryImage.onerror = () => {
-            console.error('Fehler beim Laden des Victory-Bildes');
         };
     }
     
@@ -439,6 +443,12 @@ class Endboss extends MovableObject{
         }
     }
     
+    /**
+     * Draws the victory text on the canvas with fade effect
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context
+     * @param {HTMLCanvasElement} canvas - The canvas element
+     * @param {number} alpha - The base opacity value for the text
+     */
     drawVictoryText(ctx, canvas, alpha) {
         let textAlpha = Math.max(0, (alpha - 0.3) * 1.5);
         ctx.font = "30px 'luckiest-guy'";
@@ -447,6 +457,10 @@ class Endboss extends MovableObject{
         ctx.fillText('Congratulations!', canvas.width / 2, canvas.height * 0.8);
     }
 
+    /**
+     * Checks if the boss is dead
+     * @returns {boolean} True if boss's health is depleted
+     */
     isDead() {
         return this.hitCount >= this.maxHits; 
     }

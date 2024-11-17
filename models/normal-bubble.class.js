@@ -1,4 +1,12 @@
 class NormalBubble extends MovableObject {
+
+    /**
+     * Creates a new bubble with specified position and direction
+     * @constructor
+     * @param {number} x - Initial x coordinate
+     * @param {number} y - Initial y coordinate
+     * @param {boolean} isMovingLeft - Direction of bubble movement
+     */
     constructor(x, y, isMovingLeft) {
         super().loadImage('img/1.Sharkie/4.Attack/Bubble trap/Bubble.png');
         this.x = x;
@@ -15,6 +23,10 @@ class NormalBubble extends MovableObject {
         this.throw();
     }
 
+    /**
+     * Initiates bubble movement with swinging motion
+     * Handles different movement patterns for empty and enemy-containing bubbles
+     */
     throw() {
         let time = 0;
         this.movementInterval = setInterval(() => {
@@ -36,6 +48,10 @@ class NormalBubble extends MovableObject {
         }, 25);
     }
 
+    /**
+     * Captures an enemy in the bubble
+     * @param {MovableObject} enemy - The enemy to capture
+     */
     captureEnemy(enemy) {
     if (!this.enemyCaptured) { 
         this.enemyCaptured = enemy;
