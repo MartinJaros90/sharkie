@@ -357,7 +357,7 @@ class Endboss extends MovableObject{
         let time = 0; 
         
         let victoryImage = new Image();
-        victoryImage.src = 'img/6.Botones/Tittles/You Win/Recurso 19.png';
+        victoryImage.src = 'img/6.Botones/Tittles/You win/Recurso 19.png';
 
         victoryImage.onload = () => {
             let animate = () => {
