@@ -343,7 +343,6 @@ h1{
     }
 }
 
-/* Noch kleinere Screens */
 @media only screen and (max-width: 480px) {
     .instructions-container {
         width: 95%;
@@ -360,7 +359,6 @@ h1{
     }
 }
 
-/* Landscape Mode (Querformat) */
 @media only screen and (max-height: 480px) {
     .instructions-container {
         flex-direction: row; 
@@ -454,7 +452,6 @@ h1{
     }
 }
 
-/* Mobile Controls Styling */
 .mobile-controls {
     display: none;
     position: fixed;
@@ -520,27 +517,212 @@ h1{
     background-color: rgba(127, 255, 224, 0.8);
 }
 
-/* Nur im Landscape-Modus UND wenn .show-controls Klasse vorhanden */
 @media screen and (max-width: 768px) and (orientation: landscape) {
     .mobile-controls.show-controls {
         display: flex;
     }
 }
 
-/* Einzelne Buttons können weiterhin geklickt werden */
 .movement-controls, .action-controls {
     pointer-events: auto;
 }
 
-/* Game Over/Victory Screen Buttons müssen einen höheren z-index haben */
 .game-over-screen, .victory-screen {
     z-index: 2;
     pointer-events: auto;
 }
 
-/* Stelle sicher, dass der Try Again Button klickbar ist */
 .try-again-btn, .restart-btn {
     pointer-events: auto;
     z-index: 3;
     position: relative;
+}
+
+.impressum-btn-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.impressum-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(127, 255, 224, 0.2);
+    border: 2px solid rgba(127, 255, 224, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-family: 'Georgia', serif;  /* Elegantere Schriftart für das "i" */
+    font-size: 24px;
+    font-style: italic;  /* Kursives "i" */
+    font-weight: bold;
+    color: rgba(127, 255, 224, 0.9);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(127, 255, 224, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+
+.impressum-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle at center,
+        rgba(127, 255, 224, 0.2) 0%,
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.impressum-btn:hover {
+    transform: scale(1.1);
+    background: rgba(127, 255, 224, 0.3);
+    border-color: rgba(127, 255, 224, 0.8);
+    box-shadow: 0 0 20px rgba(127, 255, 224, 0.4);
+}
+
+.impressum-btn:hover::before {
+    opacity: 1;
+}
+
+.impressum-btn span {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.impressum-btn:hover span {
+    transform: scale(1.1);
+}
+
+/* Impressum Page Styling */
+.impressum-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background: rgba(0, 0, 50, 0.9);
+    border-radius: 15px;
+    border: 3px solid rgba(127, 255, 224, 0.6);
+    box-shadow: 0 0 30px rgba(127, 255, 224, 0.2);
+    color: white;
+}
+
+.impressum-container h2, 
+.impressum-container h3 {
+    color: rgba(127, 255, 224, 0.9);
+    margin-bottom: 20px;
+    font-family: 'luckiest-guy';
+}
+
+.impressum-container p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+    font-family: Arial, sans-serif;
+}
+
+.impressum-container a {
+    color: rgba(127, 255, 224, 0.9);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.impressum-container a:hover {
+    color: rgba(127, 255, 224, 1);
+    text-decoration: underline;
+}
+
+.back-to-game {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: rgba(127, 255, 224, 0.2);
+    border: 2px solid rgba(127, 255, 224, 0.6);
+    border-radius: 25px;
+    color: rgba(127, 255, 224, 0.9);
+    text-decoration: none;
+    font-family: 'luckiest-guy';
+    transition: all 0.3s ease;
+}
+
+.back-to-game:hover {
+    background: rgba(127, 255, 224, 0.3);
+    transform: translateY(-2px);
+}
+
+@media only screen and (max-width: 768px) {
+    .impressum-container {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    .impressum-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+}
+
+/* Impressum Wrapper und Content Styling */
+.impressum-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.impressum-content {
+    width: 720px;
+    height: 60vh;
+    background: rgba(0, 0, 50, 0.95);
+    border-radius: 15px;
+    border: 3px solid rgba(127, 255, 224, 0.6);
+    box-shadow: 0 0 30px rgba(127, 255, 224, 0.2);
+    position: relative;
+    overflow-y: auto;
+    padding: 30px;
+    margin: 20px; 
+}
+
+.impressum-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.impressum-content::-webkit-scrollbar-track {
+    background: rgba(127, 255, 224, 0.1);
+    border-radius: 4px;
+}
+
+.impressum-content::-webkit-scrollbar-thumb {
+    background: rgba(127, 255, 224, 0.6);
+    border-radius: 4px;
+}
+
+.impressum-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(127, 255, 224, 0.8);
+}
+
+@media only screen and (max-width: 768px) {
+    .impressum-content {
+        width: 100%;
+        height: auto;
+        max-height: 80vh;
+        margin: 20px;
+    }
+    
+    .back-to-game {
+        position: sticky;
+        top: 0;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
 }

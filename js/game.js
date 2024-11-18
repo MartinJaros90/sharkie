@@ -223,6 +223,24 @@ function hideInstructions() {
     document.getElementById('main-menu').style.display = 'flex';
 }
 
+function showImpressum() {
+    document.getElementById('impressum-modal').style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Verhindert Scrollen im Hintergrund
+}
+
+function hideImpressum() {
+    document.getElementById('impressum-modal').style.display = 'none';
+    document.body.style.overflow = 'auto'; // Erlaubt wieder Scrollen
+}
+
+// Schließen des Modals wenn außerhalb geklickt wird
+window.onclick = function(event) {
+    const modal = document.getElementById('impressum-modal');
+    if (event.target == modal) {
+        hideImpressum();
+    }
+}
+
 /**
  * Event handler for keyboard inputs
  * @param {KeyboardEvent} e The keyboard event
