@@ -1,5 +1,5 @@
 class AudioManager {
-
+    
     /** 
      * Collection of all game audio elements
      * @static
@@ -23,33 +23,44 @@ class AudioManager {
      * @static
      * @type {boolean}
      */
-    static muted = true;
+    static muted = localStorage.getItem('isMuted') === 'false' ? false : true;
 
         /**
      * Initializes all audio settings
      * @static
      */
-    static init() {
-        Object.values(this.sounds).forEach(sound => {
-            sound.volume = 0.3;
-            sound.muted = this.muted;
-        });
-    
-        this.sounds.background.loop = true;
-        this.sounds.background.volume = 0.2;
-        this.sounds.boss.loop = true;
-        this.sounds.boss.volume = 0.2;
-    }
+        static init() {
+            Object.values(this.sounds).forEach(sound => {
+                sound.volume = 0.2;
+                sound.muted = this.muted;
+            });
+        
+            this.sounds.background.loop = true;
+            this.sounds.background.volume = 0.2;
+            this.sounds.background.preload = 'auto';
+            this.sounds.boss.loop = true;
+            this.sounds.boss.volume = 0.2;
+            this.sounds.boss.preload = 'auto';
+        }
 
         /**
      * Starts playing the background music if not muted
      * @static
      */
-    static startBackgroundMusic() {
-        if (!this.muted) {
-            this.sounds.background.play();
+        static startBackgroundMusic() {
+            if (!this.muted) {
+                this.sounds.background.loop = true;  
+                this.sounds.background.currentTime = 0;  
+                this.sounds.background.volume = 0.2; 
+                let playPromise = this.sounds.background.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay prevented:", error);
+                    });
+                }
+            }
         }
-    }
     
     /**
      * Stops and resets the background music
@@ -119,11 +130,12 @@ class AudioManager {
      * @static
      */
     static muteAll() {
-        this.muted = true; 
+        this.muted = true;
+        localStorage.setItem('isMuted', true);
         Object.values(this.sounds).forEach(sound => {
             sound.muted = true;
         });
-        this.pauseBackgroundMusic();  
+        this.pauseBackgroundMusic();
     }
 
     /**
@@ -131,11 +143,12 @@ class AudioManager {
      * @static
      */
     static unmuteAll() {
-        this.muted = false;  
+        this.muted = false;
+        localStorage.setItem('isMuted', false);
         Object.values(this.sounds).forEach(sound => {
             sound.muted = false;
         });
-        this.startBackgroundMusic();  
+        this.startBackgroundMusic();
     }
 
     /**
@@ -147,5 +160,9 @@ class AudioManager {
             sound.pause();
             sound.currentTime = 0;
         });
+
+        if (!this.muted) {
+            this.startBackgroundMusic();
+        }
     }
 }

@@ -1,27 +1,127 @@
 let canvas;
 let world;
 let keyboard = new Keyboard();
-let isMuted = true;
 let gameStarted = false;
 let mobileControls;
 
 
+
 /**
- * Initializes the game and sets up mobile controls if needed
+ * Initializes the game and sets up controls based on device type
  */
 function init() {
     canvas = document.getElementById('canvas');
+    setupControls();
+    
+    updateSoundUI(AudioManager.muted);
+    if (!AudioManager.muted) {
+        AudioManager.startBackgroundMusic();
+    }
+
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', debounce(setupControls, 250));
+}
+
+/**
+ * Checks if the device is a mobile device or tablet
+ * @returns {boolean} True if mobile device or tablet, false otherwise
+ */
+function isMobile() {
+    let hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    let MOBILE_WIDTH = 768;
+    let TABLET_WIDTH = 1024;
+    let mobileTabletRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Tablet|Tab/i;
+    
+    return (
+        hasTouch && (
+            window.innerWidth <= TABLET_WIDTH ||
+            mobileTabletRegex.test(navigator.userAgent) ||
+            (window.innerWidth / window.innerHeight < 1.3)
+        )
+    );
+}
+
+/**
+ * Sets up appropriate controls based on device type and screen size
+ */
+function setupControls() {
     if (isMobile()) {
-        mobileControls = new MobileControls(keyboard);
+        if (!mobileControls) {
+            mobileControls = new MobileControls(keyboard);
+        }
+        if (gameStarted) {
+            document.querySelector('.mobile-controls').style.display = 'flex';
+        } else {
+            document.querySelector('.mobile-controls').style.display = 'none';
+        }
+    } else {
+        if (mobileControls) {
+            document.querySelector('.mobile-controls').style.display = 'none';
+        }
     }
 }
 
 /**
- * Checks if the device is a mobile device
- * @returns {boolean} True if mobile device, false otherwise
+ * Adjusts touch area sizes based on screen dimensions
  */
-function isMobile() {
-    return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+function adjustTouchAreaSizes() {
+    let controls = document.querySelector('.mobile-controls');
+    if (!controls) return;
+
+    let isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+    let buttonSize = isTablet ? '60px' : '45px';
+    let buttonMargin = isTablet ? '15px' : '10px';
+
+    document.querySelectorAll('.mobile-controls button').forEach(button => {
+        button.style.width = buttonSize;
+        button.style.height = buttonSize;
+        button.style.margin = buttonMargin;
+    });
+}
+
+/**
+ * Handles orientation changes on mobile devices
+ */
+function handleOrientationChange() {
+    setTimeout(() => {
+        setupControls();
+        adjustGameCanvas();
+    }, 100);
+}
+
+/**
+ * Debounce function to limit rapid repeated calls
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in milliseconds
+ * @returns {Function} Debounced function
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        let later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Adjusts game canvas size based on screen dimensions
+ */
+function adjustGameCanvas() {
+    let canvas = document.getElementById('canvas');
+    if (!canvas) return;
+
+    if (window.innerWidth <= 1024) {
+        let maxWidth = Math.min(window.innerWidth * 0.95, 720);
+        canvas.style.width = `${maxWidth}px`;
+        canvas.style.height = 'auto';
+    } else {
+        canvas.style.width = '720px';
+        canvas.style.height = '480px';
+    }
 }
 
 /**
@@ -37,10 +137,8 @@ function startGame() {
             .then(() => {
                 world = new World(canvas, keyboard);
                 world.startGame();
-                if (isMobile()) {
-                    document.querySelector('.mobile-controls').style.display = 'flex';
-                }
-                if (!isMuted) {
+                setupControls(); 
+                if (!AudioManager.muted) {   
                     AudioManager.startBackgroundMusic();
                 }
             });
@@ -192,7 +290,16 @@ function updateProgress(state) {
  * Toggles sound on/off and updates UI accordingly
  */
 function toggleSound() {
-    isMuted = !isMuted;
+    AudioManager.muted = !AudioManager.muted;
+    updateSoundUI(AudioManager.muted);
+    localStorage.setItem('isMuted', AudioManager.muted);
+}
+
+/**
+ * Updates the sound UI elements based on mute state
+ * @param {boolean} isMuted - Whether sound is muted
+ */
+function updateSoundUI(isMuted) {
     let soundBtn = document.querySelector('.sound-btn');
     let soundIcon = document.getElementById('soundIcon');
     
@@ -235,7 +342,7 @@ function hideImpressum() {
 
 // Schließen des Modals wenn außerhalb geklickt wird
 window.onclick = function(event) {
-    const modal = document.getElementById('impressum-modal');
+    let modal = document.getElementById('impressum-modal');
     if (event.target == modal) {
         hideImpressum();
     }

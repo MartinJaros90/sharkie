@@ -188,23 +188,23 @@ h1{
 }
 
 .sound-btn-container {
-    position: absolute;
+    position: fixed;
     top: 20px;
     right: 20px;
     z-index: 1000;
 }
 
 .sound-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: transform 0.3s ease;
-    width: 40px;  
+    width: 40px;
     height: 40px;
+    border-radius: 50%;
+    background: rgba(127, 255, 224, 0.2);
+    border: 2px solid rgba(127, 255, 224, 0.6);
+    cursor: pointer;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
 }
 
 .sound-btn img {
@@ -214,11 +214,14 @@ h1{
 }
 
 .sound-btn:hover {
+    background: rgba(127, 255, 224, 0.3);
     transform: scale(1.1);
 }
 
-.sound-btn.muted img {
-    opacity: 0.5;  
+.sound-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
 }
 
 
@@ -438,6 +441,15 @@ h1{
     h1 {
         display: none;
     }
+
+    .mobile-controls {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .mobile-controls button {
+        font-size: 20px;
+    }
 }
 
 @media screen and (max-width: 768px) and (orientation: portrait) {
@@ -449,6 +461,37 @@ h1{
 @media screen and (max-height: 480px) {
     h1 {
         display: none;
+    }
+
+    .mobile-controls {
+        padding: 10px;
+        gap: 10px;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .mobile-controls {
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .mobile-controls button {
+        font-size: 24px;
+    }
+
+    .sound-btn-container {
+        top: 10px;
+        right: 10px;
+    }
+
+    .sound-btn {
+        width: 35px;
+        height: 35px;
+    }
+
+    .sound-btn img {
+        width: 18px;
+        height: 18px;
     }
 }
 
@@ -469,6 +512,7 @@ h1{
     flex-direction: column;
     gap: 10px;
     pointer-events: auto;
+    margin-top: 30px;
 }
 
 .control-row {
