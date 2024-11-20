@@ -128,20 +128,22 @@ function adjustGameCanvas() {
  * Starts the game and initializes the game world
  */
 function startGame() {
-    if (!gameStarted) {
-        gameStarted = true;
-        document.getElementById('start-screen').style.display = 'none';
-        canvas.style.display = 'block';
-        
-        showCanvasLoading()
-            .then(() => {
-                world = new World(canvas, keyboard);
-                world.startGame();
-                setupControls(); 
-                if (!AudioManager.muted) {   
-                    AudioManager.startBackgroundMusic();
-                }
-            });
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('canvas').style.display = 'block';
+    
+    AudioManager.init();
+    if (!AudioManager.muted) {
+        AudioManager.startBackgroundMusic();
+    }
+    
+    if (!world) {
+        world = new World(canvas, keyboard);
+    }
+    world.startGame();
+    gameStarted = true;
+    
+    if (isMobile()) {
+        document.querySelector('.mobile-controls').style.display = 'flex';
     }
 }
 
