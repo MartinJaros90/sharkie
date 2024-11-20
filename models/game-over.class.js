@@ -50,6 +50,7 @@ class GameOver {
      */
     createEventHandlers(gameOverImage, isHovered) {
         let handleClick = (event) => {
+            event.preventDefault(); // Verhindert unerwünschte Standard-Touch-Aktionen
             if (this.isButtonClicked(event, gameOverImage)) {
                 this.restartGame();
             }
@@ -67,16 +68,26 @@ class GameOver {
             if (e.key === 'Enter') this.restartGame();
         };
     
-        return { handleClick, handleMouseMove, handleKeydown };
+        // Touch-Event Handler hinzufügen
+        let handleTouch = (event) => {
+            event.preventDefault();
+            if (this.isButtonClicked(event, gameOverImage)) {
+                this.restartGame();
+            }
+        };
+    
+        return { handleClick, handleMouseMove, handleKeydown, handleTouch };
     }
     
     /**
      * Adds event listeners for user interactions
      * @param {Object} handlers - Object containing event handler functions
      */
-    addEventListeners({ handleClick, handleMouseMove, handleKeydown }) {
+    addEventListeners({ handleClick, handleMouseMove, handleKeydown, handleTouch }) {
         this.canvas.addEventListener('mousemove', handleMouseMove);
         this.canvas.addEventListener('click', handleClick);
+        this.canvas.addEventListener('touchstart', handleTouch);
+        this.canvas.addEventListener('touchend', handleTouch);
         document.addEventListener('keydown', handleKeydown);
     }
     
@@ -84,11 +95,13 @@ class GameOver {
      * Restarts the game and cleans up event listeners
      */
     restartGame() {
-        let { handleClick, handleMouseMove, handleKeydown } = this.handlers;
+        let { handleClick, handleMouseMove, handleKeydown, handleTouch } = this.handlers;
         this.canvas.removeEventListener('mousemove', handleMouseMove);
         this.canvas.removeEventListener('click', handleClick);
+        this.canvas.removeEventListener('touchstart', handleTouch);
+        this.canvas.removeEventListener('touchend', handleTouch);
         document.removeEventListener('keydown', handleKeydown);
-
+    
         if (isMobile()) {
             document.querySelector('.mobile-controls').style.display = 'flex';
         }
@@ -127,9 +140,16 @@ class GameOver {
      */
     getMousePosition(event) {
         let rect = this.canvas.getBoundingClientRect();
+        let scaleX = this.canvas.width / rect.width;
+        let scaleY = this.canvas.height / rect.height;
+        
+        // Prüfen ob es ein Touch- oder Maus-Event ist
+        let clientX = event.touches ? event.touches[0].clientX : event.clientX;
+        let clientY = event.touches ? event.touches[0].clientY : event.clientY;
+        
         return {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
         };
     }
     
