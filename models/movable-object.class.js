@@ -51,38 +51,124 @@ class MovableObject extends DrawableObject{
         if (mo.isTrappedInBubble) {
             return false;
         }
-    
-        if (mo instanceof Endboss) {
-            let bossOffsetX = 100; 
-            let bossOffsetY = 100;  
-            let bossOffsetTop = 100; 
-            
-            let myOffsetX = 40;
-            let myOffsetY = 20;
-            let myOffsetTop = 140;
-    
-            let myReducedWidth = this.width - 2 * myOffsetX;
-            let myReducedHeight = this.height - myOffsetY - myOffsetTop;
-            let bossReducedWidth = mo.width - 2 * bossOffsetX;  
-            let bossReducedHeight = mo.height - bossOffsetY - bossOffsetTop;
-    
-            return (this.x + myOffsetX + myReducedWidth > mo.x + bossOffsetX &&
-                    this.y + myOffsetTop + myReducedHeight > mo.y + bossOffsetTop &&
-                    this.x + myOffsetX < mo.x + bossOffsetX + bossReducedWidth &&
-                    this.y + myOffsetTop < mo.y + bossOffsetTop + bossReducedHeight);
-        } else {
-            let offsetX = 40;
-            let offsetY = 40;
-            let offsetTop = 120;
-    
-            let reducedWidth = this.width - 2 * offsetX;
-            let reducedHeight = this.height - offsetY - offsetTop;
-    
-            return (this.x + offsetX + reducedWidth > mo.x &&
-                    this.y + offsetTop + reducedHeight > mo.y &&
-                    this.x + offsetX < mo.x + mo.width &&
-                    this.y + offsetTop < mo.y + mo.height);
-        }
+        
+        return mo instanceof Endboss ? 
+            this.checkEndbossCollision(mo) : 
+            this.checkNormalCollision(mo);
+    }
+
+    /**
+     * Checks collision specifically with Endboss
+     * @private
+     * @param {Endboss} boss - The endboss object
+     * @returns {boolean} True if colliding with boss
+     */
+    checkEndbossCollision(boss) {
+        const offsets = this.getEndbossOffsets();
+        const dimensions = this.calculateCollisionDimensions(offsets, boss);
+        
+        return this.checkCollisionBounds(dimensions);
+    }
+
+    /**
+     * Gets offset values for Endboss collision
+     * @private
+     * @returns {Object} Object containing offset values
+     */
+    getEndbossOffsets() {
+        return {
+            bossOffsetX: 100,
+            bossOffsetY: 100,
+            bossOffsetTop: 100,
+            myOffsetX: 40,
+            myOffsetY: 20,
+            myOffsetTop: 140
+        };
+    }
+
+    /**
+     * Calculates dimensions for collision detection
+     * @private
+     * @param {Object} offsets - Offset values
+     * @param {Endboss} boss - The endboss object
+     * @returns {Object} Calculated dimensions
+     */
+    calculateCollisionDimensions(offsets, boss) {
+        const { bossOffsetX, bossOffsetY, bossOffsetTop, myOffsetX, myOffsetY, myOffsetTop } = offsets;
+        
+        return {
+            myX: this.x + myOffsetX,
+            myY: this.y + myOffsetTop,
+            bossX: boss.x + bossOffsetX,
+            bossY: boss.y + bossOffsetTop,
+            myWidth: this.width - 2 * myOffsetX,
+            myHeight: this.height - myOffsetY - myOffsetTop,
+            bossWidth: boss.width - 2 * bossOffsetX,
+            bossHeight: boss.height - bossOffsetY - bossOffsetTop
+        };
+    }
+
+    /**
+     * Checks collision with normal enemies
+     * @private
+     * @param {MovableObject} mo - The other movable object
+     * @returns {boolean} True if colliding with enemy
+     */
+    checkNormalCollision(mo) {
+        const offsets = this.getNormalOffsets();
+        const dimensions = this.calculateNormalDimensions(offsets, mo);
+        
+        return this.checkCollisionBounds(dimensions);
+    }
+
+    /**
+     * Gets offset values for normal collision
+     * @private
+     * @returns {Object} Object containing offset values
+     */
+    getNormalOffsets() {
+        return {
+            offsetX: 40,
+            offsetY: 40,
+            offsetTop: 120
+        };
+    }
+
+    /**
+     * Calculates dimensions for normal collision
+     * @private
+     * @param {Object} offsets - Offset values
+     * @param {MovableObject} mo - The other movable object
+     * @returns {Object} Calculated dimensions
+     */
+    calculateNormalDimensions(offsets, mo) {
+        const { offsetX, offsetY, offsetTop } = offsets;
+        
+        return {
+            myX: this.x + offsetX,
+            myY: this.y + offsetTop,
+            bossX: mo.x,
+            bossY: mo.y,
+            myWidth: this.width - 2 * offsetX,
+            myHeight: this.height - offsetY - offsetTop,
+            bossWidth: mo.width,
+            bossHeight: mo.height
+        };
+    }
+
+    /**
+     * Checks if bounds are overlapping
+     * @private
+     * @param {Object} dim - Dimensions object
+     * @returns {boolean} True if bounds overlap
+     */
+    checkCollisionBounds(dim) {
+        return (
+            dim.myX + dim.myWidth > dim.bossX &&
+            dim.myY + dim.myHeight > dim.bossY &&
+            dim.myX < dim.bossX + dim.bossWidth &&
+            dim.myY < dim.bossY + dim.bossHeight
+        );
     }
 
     /**

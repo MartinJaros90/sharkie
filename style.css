@@ -2,6 +2,8 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; 
+    min-height: 100vh;     
     font-family: 'luckiest-guy', Georgia, 'Times New Roman', Times, serif;
     background-image: url('img/3. Background/background.png');
     background-size: cover;
@@ -15,13 +17,13 @@ canvas, .start-screen {
     background-color: black;
     display: block;
     width: 720px;
-    height: 480px;
+    height: 480px; 
 }
 
 
 h1{
     font-size: 88px;
-    margin-top: 0;
+    margin-top: 42px;
     color: rgb(133, 30, 229);
     text-shadow: 4px 2px 8px rgba(0, 0, 0, 0.5);
 }

@@ -116,34 +116,73 @@ class CharacterAnimationManager {
 
     /**
      * Initiates the throw animation sequence
-     * @param {Function} callback - Function to be called when throw animation reaches frame 4
+     * @param {Function} callback - Function to be called at frame 4
      */
     startThrowAnimation(callback) {
         if (this.throwAnimationInterval) return;
-    
-        let currentFrame = 0;
-        let ANIMATION_FRAMES = this.character.IMAGES_THROW.length;
-        let FRAME_TIME = 50; 
-        let COOLDOWN = 500; 
         
-        this.throwAnimationInterval = setInterval(() => {
+        let animationConfig = {
+            currentFrame: 0,
+            ANIMATION_FRAMES: this.character.IMAGES_THROW.length,
+            FRAME_TIME: 50,
+            COOLDOWN: 500
+        };
+        
+        this.throwAnimationInterval = setInterval(
+            () => this.updateThrowAnimation(animationConfig, callback),
+            animationConfig.FRAME_TIME
+        );
+    }
 
-            this.character.img = this.character.imageCache[this.character.IMAGES_THROW[currentFrame]];
+    /**
+     * Updates the current frame of the throw animation
+     * @private
+     */
+    updateThrowAnimation(config, callback) {
+        this.updateThrowFrame(config.currentFrame);
+        
+        if (config.currentFrame === 4) {
+            this.handleBubbleThrow(callback);
+        }
+        
+        config.currentFrame++;
+        
+        if (config.currentFrame >= config.ANIMATION_FRAMES) {
+            this.finishThrowAnimation(config.COOLDOWN);
+        }
+    }
 
-            if (currentFrame === 4 && callback) {
-                callback(this.character.otherDirection);
-                AudioManager.play('bubble');
-            }
-            
-            currentFrame++;
-            if (currentFrame >= ANIMATION_FRAMES) {
-                clearInterval(this.throwAnimationInterval);
-                this.throwAnimationInterval = null;
-                setTimeout(() => {
-                    this.character.canThrow = true;
-                }, COOLDOWN);
-            }
-        }, FRAME_TIME);
+    /**
+     * Updates the current animation image
+     * @private
+     */
+    updateThrowFrame(currentFrame) {
+        this.character.img = this.character.imageCache[
+            this.character.IMAGES_THROW[currentFrame]
+        ];
+    }
+
+    /**
+     * Executes bubble throw and plays sound
+     * @private
+     */
+    handleBubbleThrow(callback) {
+        if (callback) {
+            callback(this.character.otherDirection);
+            AudioManager.play('bubble');
+        }
+    }
+
+    /**
+     * Ends throw animation and sets cooldown
+     * @private
+     */
+    finishThrowAnimation(cooldown) {
+        clearInterval(this.throwAnimationInterval);
+        this.throwAnimationInterval = null;
+        setTimeout(() => {
+            this.character.canThrow = true;
+        }, cooldown);
     }
 
     /**

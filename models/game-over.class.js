@@ -42,43 +42,88 @@ class GameOver {
         }
     }
     
-    /**
+        /**
      * Creates event handlers for mouse and keyboard interactions
      * @param {HTMLImageElement} gameOverImage - The game over screen image
      * @param {boolean} isHovered - Current hover state
      * @returns {Object} Object containing event handler functions
      */
-    createEventHandlers(gameOverImage, isHovered) {
-        let handleClick = (event) => {
-            event.preventDefault(); // Verhindert unerwünschte Standard-Touch-Aktionen
-            if (this.isButtonClicked(event, gameOverImage)) {
-                this.restartGame();
-            }
-        };
+        createEventHandlers(gameOverImage, isHovered) {
+            return {
+                handleClick: this.createClickHandler(gameOverImage),
+                handleMouseMove: this.createMouseMoveHandler(gameOverImage, isHovered),
+                handleKeydown: this.createKeydownHandler(),
+                handleTouch: this.createTouchHandler(gameOverImage)
+            };
+        }
     
-        let handleMouseMove = (event) => {
-            let newIsHovered = this.isButtonHovered(event, gameOverImage);
-            if (newIsHovered !== isHovered) {
-                isHovered = newIsHovered;
-                this.canvas.style.cursor = isHovered ? 'pointer' : 'default';
-            }
-        };
+        /**
+         * Creates the click event handler
+         * @private
+         * @param {HTMLImageElement} gameOverImage - The game over screen image
+         * @returns {Function} Click event handler
+         */
+        createClickHandler(gameOverImage) {
+            return (event) => {
+                event.preventDefault();
+                if (this.isButtonClicked(event, gameOverImage)) {
+                    this.restartGame();
+                }
+            };
+        }
     
-        let handleKeydown = (e) => {
-            if (e.key === 'Enter') this.restartGame();
-        };
+        /**
+         * Creates the mouse move event handler
+         * @private
+         * @param {HTMLImageElement} gameOverImage - The game over screen image
+         * @param {boolean} isHovered - Current hover state
+         * @returns {Function} Mouse move event handler
+         */
+        createMouseMoveHandler(gameOverImage, isHovered) {
+            return (event) => {
+                let newIsHovered = this.isButtonHovered(event, gameOverImage);
+                if (newIsHovered !== isHovered) {
+                    isHovered = newIsHovered;
+                    this.updateCursor(isHovered);
+                }
+            };
+        }
     
-        // Touch-Event Handler hinzufügen
-        let handleTouch = (event) => {
-            event.preventDefault();
-            if (this.isButtonClicked(event, gameOverImage)) {
-                this.restartGame();
-            }
-        };
+        /**
+         * Creates the keydown event handler
+         * @private
+         * @returns {Function} Keydown event handler
+         */
+        createKeydownHandler() {
+            return (e) => {
+                if (e.key === 'Enter') this.restartGame();
+            };
+        }
     
-        return { handleClick, handleMouseMove, handleKeydown, handleTouch };
-    }
+        /**
+         * Creates the touch event handler
+         * @private
+         * @param {HTMLImageElement} gameOverImage - The game over screen image
+         * @returns {Function} Touch event handler
+         */
+        createTouchHandler(gameOverImage) {
+            return (event) => {
+                event.preventDefault();
+                if (this.isButtonClicked(event, gameOverImage)) {
+                    this.restartGame();
+                }
+            };
+        }
     
+        /**
+         * Updates the cursor style based on hover state
+         * @private
+         * @param {boolean} isHovered - Whether the button is being hovered
+         */
+        updateCursor(isHovered) {
+            this.canvas.style.cursor = isHovered ? 'pointer' : 'default';
+        }
+
     /**
      * Adds event listeners for user interactions
      * @param {Object} handlers - Object containing event handler functions

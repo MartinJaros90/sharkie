@@ -18,7 +18,7 @@ class Endboss extends MovableObject{
     hadFirstContact = false;
     visible = false;
     energy = 100;
-    maxHits = 5;
+    maxHits = 4;
 
     movementPause = false;
     pauseDuration = 2000;  
@@ -109,54 +109,121 @@ class Endboss extends MovableObject{
         }
     }
 
-    
-    /**
+     /**
      * Handles all animation states of the boss
      */
-    animate() {
+     animate() {
         let i = 0;
         setInterval(() => {
-            if (this.world?.character?.x > 2000 && !this.hadFirstContact) {
-                i = 0;
-                this.hadFirstContact = true;
-                this.visible = true;
-                AudioManager.stopBackgroundMusic();
-                AudioManager.play('boss');
-                this.world.endbossStatusBar.visible = true;
-            }
-
-            if (this.isDead()) {
-                if (!this.isDying) {
-                    if (this.currentDeadImage < this.IMAGES_DEAD.length - 1) {
-                        this.playAnimation(this.IMAGES_DEAD);
-                        this.currentDeadImage++;
-                    } else {
-                        this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
-                        this.isDying = true;
-                        this.startDeadFloating();
-                    }
-                }
-            } else if (this.hadFirstContact && !this.introduceFinished) {
-                this.playAnimation(this.IMAGES_INTRODUCE);
-                if (i >= 9) { 
-                    this.introduceFinished = true;
-                    this.startMoving();
-                }
+            this.checkFirstContact();
+            this.handleAnimationStates(i);
+            this.updateMovement();
+            if (this.hadFirstContact && !this.introduceFinished) {
                 i++;
-            } else if (this.isHurt()) {
-                this.playAnimation(this.IMAGES_HURT);
-            } else if (this.isAttacking) {
-                this.playAnimation(this.IMAGES_ATTACK);
-            } else if (this.movementPause) {
-                this.img = this.imageCache[this.IMAGES_SWIMM[0]];
+            }
+        }, 150);
+    }
+
+    /**
+     * Checks for first contact with the boss and initializes encounter
+     * @private
+     */
+    checkFirstContact() {
+        if (this.world?.character?.x > 2000 && !this.hadFirstContact) {
+            this.initializeFirstContact();
+        }
+    }
+
+    /**
+     * Initializes the first contact state with the boss
+     * @private
+     */
+    initializeFirstContact() {
+        this.hadFirstContact = true;
+        this.visible = true;
+        AudioManager.stopBackgroundMusic();
+        AudioManager.play('boss');
+        this.world.endbossStatusBar.visible = true;
+    }
+
+    /**
+     * Handles different animation states based on boss condition
+     * @private
+     * @param {number} introCounter - Counter for intro animation
+     */
+    handleAnimationStates(introCounter) {
+        if (this.isDead()) {
+            this.handleDeathAnimation();
+        } else if (this.hadFirstContact && !this.introduceFinished) {
+            this.handleIntroAnimation(introCounter);
+        } else {
+            this.handleNormalAnimations();
+        }
+    }
+
+    /**
+     * Handles death animation sequence
+     * @private
+     */
+    handleDeathAnimation() {
+        if (!this.isDying) {
+            if (this.currentDeadImage < this.IMAGES_DEAD.length - 1) {
+                this.playAnimation(this.IMAGES_DEAD);
+                this.currentDeadImage++;
             } else {
-                this.playAnimation(this.IMAGES_SWIMM);
+                this.finishDeathAnimation();
             }
-            if (!this.isDead() && !this.isHurt() && this.introduceFinished && !this.movementPause) {
-                this.moveVertically();
-            }
-    
-        }, 150); 
+        }
+    }
+
+    /**
+     * Completes the death animation sequence
+     * @private
+     */
+    finishDeathAnimation() {
+        this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
+        this.isDying = true;
+        this.startDeadFloating();
+    }
+
+    /**
+     * Handles intro animation sequence
+     * @private
+     * @param {number} counter - Animation frame counter
+     */
+    handleIntroAnimation(counter) {
+        this.playAnimation(this.IMAGES_INTRODUCE);
+        if (counter >= 9) {
+            this.introduceFinished = true;
+            this.startMoving();
+        }
+    }
+
+    /**
+     * Handles normal state animations
+     * @private
+     */
+    handleNormalAnimations() {
+        if (this.isHurt()) {
+            this.playAnimation(this.IMAGES_HURT);
+        } else if (this.isAttacking) {
+            this.playAnimation(this.IMAGES_ATTACK);
+        } else if (this.movementPause) {
+            this.img = this.imageCache[this.IMAGES_SWIMM[0]];
+        } else {
+            this.playAnimation(this.IMAGES_SWIMM);
+        }
+    }
+
+    /**
+     * Updates boss movement if conditions are met
+     * @private
+     */
+    updateMovement() {
+        if (!this.isDead() && !this.isHurt() && 
+            this.introduceFinished && !this.movementPause) {
+            this.moveVertically();
+        }
     }
 
     /**
@@ -358,54 +425,132 @@ class Endboss extends MovableObject{
         }, 2000);
     }
 
-    /**
-     * Displays victory screen with animations
-     */
     showVictoryScreen() {
         this.world.gameIsRunning = false;
-        let ctx = this.world.ctx;
-        let canvas = this.world.canvas;
-        let alpha = 0;
-        let scale = 0.1;
-        let time = 0; 
-        
+        let config = this.initializeVictoryConfig();
+        this.loadAndAnimateVictoryScreen(config);
+    }
+
+    /**
+     * Initializes configuration for victory screen
+     * @private
+     * @returns {Object} Victory screen configuration
+     */
+    initializeVictoryConfig() {
+        return {
+            ctx: this.world.ctx,
+            canvas: this.world.canvas,
+            alpha: 0,
+            scale: 0.1,
+            time: 0,
+            victoryImage: this.createVictoryImage()
+        };
+    }
+
+    /**
+     * Creates and loads victory image
+     * @private
+     * @returns {HTMLImageElement} Victory image element
+     */
+    createVictoryImage() {
         let victoryImage = new Image();
         victoryImage.src = 'img/6.Botones/Tittles/You win/Recurso 19.png';
+        return victoryImage;
+    }
 
-        victoryImage.onload = () => {
+    /**
+     * Loads and starts victory screen animation
+     * @private
+     * @param {Object} config - Victory screen configuration
+     */
+    loadAndAnimateVictoryScreen(config) {
+        config.victoryImage.onload = () => {
             let animate = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = `rgba(0, 0, 50, ${Math.min(alpha * 0.5, 0.7)})`;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                this.clearAndDrawBackground(config);
                 
-                if (victoryImage.complete && victoryImage.naturalWidth !== 0) {
-                    let imgWidth = canvas.width * 0.6 * (scale >= 1 ? 1 : scale);
-                    let imgHeight = (imgWidth * victoryImage.height) / victoryImage.width;
-                    let x = (canvas.width - imgWidth) / 2;
-                    let y = (canvas.height - imgHeight) / 2;
-                    
-                    ctx.save();
-                    ctx.globalAlpha = alpha;
-                    ctx.drawImage(victoryImage, x, y, imgWidth, imgHeight);
-                    
-                    if (alpha >= 1) {
-                        this.drawVictoryEffects(ctx, canvas, alpha, time);
-                    } else {
-                        this.drawVictoryEffects(ctx, canvas, alpha);
-                    }
-                    ctx.restore();
+                if (this.isImageReady(config.victoryImage)) {
+                    this.drawVictoryImage(config);
+                    this.updateAnimationValues(config);
                 }
-                if (alpha < 1) {
-                    alpha = Math.min(alpha + 0.01, 1);
-                }
-                if (scale < 1) {
-                    scale = Math.min(scale + 0.02, 1);
-                }
-                time += 0.02; 
+                
                 requestAnimationFrame(animate);
             };
             animate();
         };
+    }
+
+    /**
+     * Clears canvas and draws background
+     * @private
+     * @param {Object} config - Victory screen configuration
+     */
+    clearAndDrawBackground(config) {
+        let { ctx, canvas, alpha } = config;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = `rgba(0, 0, 50, ${Math.min(alpha * 0.5, 0.7)})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    /**
+     * Checks if victory image is ready to be drawn
+     * @private
+     * @param {HTMLImageElement} image - Victory image element
+     * @returns {boolean} True if image is ready
+     */
+    isImageReady(image) {
+        return image.complete && image.naturalWidth !== 0;
+    }
+
+    /**
+     * Draws victory image and effects
+     * @private
+     * @param {Object} config - Victory screen configuration
+     */
+    drawVictoryImage(config) {
+        let { ctx, canvas, victoryImage, alpha, scale, time } = config;
+        let dimensions = this.calculateImageDimensions(config);
+        
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(victoryImage, dimensions.x, dimensions.y, dimensions.width, dimensions.height);
+        
+        if (alpha >= 1) {
+            this.drawVictoryEffects(ctx, canvas, alpha, time);
+        } else {
+            this.drawVictoryEffects(ctx, canvas, alpha);
+        }
+        ctx.restore();
+    }
+
+    /**
+     * Calculates dimensions for victory image
+     * @private
+     * @param {Object} config - Victory screen configuration
+     * @returns {Object} Image dimensions and position
+     */
+    calculateImageDimensions(config) {
+        let { canvas, victoryImage, scale } = config;
+        let imgWidth = canvas.width * 0.6 * (scale >= 1 ? 1 : scale);
+        let imgHeight = (imgWidth * victoryImage.height) / victoryImage.width;
+        let x = (canvas.width - imgWidth) / 2;
+        let y = (canvas.height - imgHeight) / 2;
+        
+        return { width: imgWidth, height: imgHeight, x, y };
+    }
+
+    /**
+     * Updates animation values for next frame
+     * @private
+     * @param {Object} config - Victory screen configuration
+     */
+    updateAnimationValues(config) {
+        if (config.alpha < 1) {
+            config.alpha = Math.min(config.alpha + 0.01, 1);
+        }
+        if (config.scale < 1) {
+            config.scale = Math.min(config.scale + 0.02, 1);
+        }
+        config.time += 0.02;
     }
     
     /**
