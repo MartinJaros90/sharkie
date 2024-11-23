@@ -426,11 +426,36 @@ class Endboss extends MovableObject{
     }
 
     showVictoryScreen() {
-        this.world.gameIsRunning = false;
-        let config = this.initializeVictoryConfig();
-        this.loadAndAnimateVictoryScreen(config);
+        if (!this.world.victoryScreen) {
+            this.world.victoryScreen = new VictoryScreen(this.world);
+            this.world.victoryScreen.show();
+        }
     }
 
+    playDeadAnimation() {
+        let currentDeadImage = 0;
+        let deadInterval = setInterval(() => {
+            if (currentDeadImage < this.IMAGES_DEAD.length) {
+                this.img = this.imageCache[this.IMAGES_DEAD[currentDeadImage]];
+                currentDeadImage++;
+            } else {
+                clearInterval(deadInterval);
+            }
+        }, 200);
+    }
+
+    /**
+     * Behandelt den Tod des Endbosses
+     */
+    die() {
+        if (!this.isDying) {
+            this.isDying = true;
+            this.playDeadAnimation();
+            setTimeout(() => {
+                this.showVictoryScreen();
+            }, 1000);
+        }
+    }
     /**
      * Initializes configuration for victory screen
      * @private

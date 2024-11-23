@@ -12,7 +12,7 @@ class NormalBubble extends MovableObject {
         this.x = x;
         this.y = y;
         this.startX = x;
-        this.maxDistance = 400;
+        this.maxDistance = 250;
         this.verticalSpeed = -2;
         this.horizontalSpeed = isMovingLeft ? -10 : 10;
         this.swingAmplitude = 2;

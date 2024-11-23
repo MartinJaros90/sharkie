@@ -12,7 +12,7 @@ class PoisonBubble extends MovableObject {
         this.x = x;
         this.y = y;
         this.startX = x;
-        this.maxDistance = 400;
+        this.maxDistance = 300;
         this.verticalSpeed = -2;
         this.horizontalSpeed = isMovingLeft ? -20 : 20; 
         this.swingAmplitude = 2;

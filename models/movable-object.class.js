@@ -64,8 +64,8 @@ class MovableObject extends DrawableObject{
      * @returns {boolean} True if colliding with boss
      */
     checkEndbossCollision(boss) {
-        const offsets = this.getEndbossOffsets();
-        const dimensions = this.calculateCollisionDimensions(offsets, boss);
+        let offsets = this.getEndbossOffsets();
+        let dimensions = this.calculateCollisionDimensions(offsets, boss);
         
         return this.checkCollisionBounds(dimensions);
     }
@@ -94,7 +94,7 @@ class MovableObject extends DrawableObject{
      * @returns {Object} Calculated dimensions
      */
     calculateCollisionDimensions(offsets, boss) {
-        const { bossOffsetX, bossOffsetY, bossOffsetTop, myOffsetX, myOffsetY, myOffsetTop } = offsets;
+        let { bossOffsetX, bossOffsetY, bossOffsetTop, myOffsetX, myOffsetY, myOffsetTop } = offsets;
         
         return {
             myX: this.x + myOffsetX,
@@ -109,16 +109,28 @@ class MovableObject extends DrawableObject{
     }
 
     /**
-     * Checks collision with normal enemies
-     * @private
-     * @param {MovableObject} mo - The other movable object
-     * @returns {boolean} True if colliding with enemy
+     * Checks for collision between two objects using offset-based hitboxes
+     * @param {MovableObject} mo - The other movable object to check collision with
+     * @returns {boolean} True if objects are colliding
      */
     checkNormalCollision(mo) {
-        const offsets = this.getNormalOffsets();
-        const dimensions = this.calculateNormalDimensions(offsets, mo);
-        
-        return this.checkCollisionBounds(dimensions);
+        let myOffsetX = 40;
+        let myOffsetTop = 100;  
+        let myOffsetBottom = 0; 
+        let enemyOffsetX = 30;
+        let enemyOffsetTop = 80;    
+        let enemyOffsetBottom = 30; 
+        let myReducedWidth = this.width - 2 * myOffsetX;
+        let myReducedHeight = this.height - myOffsetTop - myOffsetBottom; 
+        let enemyReducedWidth = mo.width - 2 * enemyOffsetX;
+        let enemyReducedHeight = mo.height - enemyOffsetTop - enemyOffsetBottom;
+
+        return (
+            this.x + myOffsetX + myReducedWidth > mo.x + enemyOffsetX &&
+            this.y + myOffsetTop + myReducedHeight > mo.y + enemyOffsetTop &&
+            this.x + myOffsetX < mo.x + enemyOffsetX + enemyReducedWidth &&
+            this.y + myOffsetTop < mo.y + enemyOffsetTop + enemyReducedHeight
+        );
     }
 
     /**
@@ -142,7 +154,7 @@ class MovableObject extends DrawableObject{
      * @returns {Object} Calculated dimensions
      */
     calculateNormalDimensions(offsets, mo) {
-        const { offsetX, offsetY, offsetTop } = offsets;
+        let { offsetX, offsetY, offsetTop } = offsets;
         
         return {
             myX: this.x + offsetX,
@@ -214,63 +226,63 @@ class MovableObject extends DrawableObject{
         }
     }
 
-/**
- * Plays hurt animation sequence
- */
-playHurtAnimation() {
-    if (this.isHurtPlaying) return;
-    this.isHurtPlaying = true;
+    /**
+     * Plays hurt animation sequence
+     */
+    playHurtAnimation() {
+        if (this.isHurtPlaying) return;
+        this.isHurtPlaying = true;
 
-    clearInterval(this.idleInterval);
-    clearInterval(this.longIdleInterval);
-    clearTimeout(this.longIdleTimeout);
-    
-    let i = 0;
-    let hurtInterval = setInterval(() => {
-        if (i < this.IMAGES_HURT.length) {
-            this.img = this.imageCache[this.IMAGES_HURT[i]];
-            i++;
-        } else {
-            clearInterval(hurtInterval);
-            this.isHurtPlaying = false;
-            if (this.startIdleAnimation) {
-                this.startIdleAnimation();
+        clearInterval(this.idleInterval);
+        clearInterval(this.longIdleInterval);
+        clearTimeout(this.longIdleTimeout);
+        
+        let i = 0;
+        let hurtInterval = setInterval(() => {
+            if (i < this.IMAGES_HURT.length) {
+                this.img = this.imageCache[this.IMAGES_HURT[i]];
+                i++;
+            } else {
+                clearInterval(hurtInterval);
+                this.isHurtPlaying = false;
+                if (this.startIdleAnimation) {
+                    this.startIdleAnimation();
+                }
             }
-        }
-    }, 150);
-} 
-
-/**
- * Checks if object is currently in hurt state
- * @returns {boolean} True if object was hit less than 1 second ago
- */
-isHurt() {
-    let timepassed = new Date().getTime() - this.lastHit;
-    timepassed = timepassed / 1000;
-    return timepassed < 1; 
-}
+        }, 150);
+    } 
 
     /**
-     * Checks if object is dead
-     * @returns {boolean} True if energy is 0
+     * Checks if object is currently in hurt state
+     * @returns {boolean} True if object was hit less than 1 second ago
      */
-    isDead() {
-        return this.energy == 0;
+    isHurt() {
+        let timepassed = new Date().getTime() - this.lastHit;
+        timepassed = timepassed / 1000;
+        return timepassed < 1; 
     }
 
-    moveRight() {
-       this.x += this.speed;
-    }
+        /**
+         * Checks if object is dead
+         * @returns {boolean} True if energy is 0
+         */
+        isDead() {
+            return this.energy == 0;
+        }
 
-    moveLeft() {
-       this.x -= this.speed;
-    }
+        moveRight() {
+        this.x += this.speed;
+        }
 
-    moveUp() {
-        this.y -= this.speed;
-    }
+        moveLeft() {
+        this.x -= this.speed;
+        }
 
-    moveDown() {
-        this.y += this.speed;
+        moveUp() {
+            this.y -= this.speed;
+        }
+
+        moveDown() {
+            this.y += this.speed;
+        }
     }
-}

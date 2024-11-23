@@ -32,6 +32,7 @@ class World {
         this.character = new Character();
         this.level = new Level([], [], createBackground());
         this.setWorld();
+        this.victoryScreen = null;
         AudioManager.init();
         this.draw(); 
     }
@@ -60,30 +61,30 @@ class World {
             }
         });
         this.character.initializeCharacter(); 
-}
+    }
 
-/**
- * Main game loop that checks for collisions and interactions
- */
-run() {
-    if (!this.gameIsRunning) return;
-    
-    setInterval(() => {
-        if (this.gameIsRunning) {
-            this.checkCollisions();
-            this.checkThrowObjects();
-            this.checkCharacterCoinCollision();
-            this.checkCharacterPoisonCollision();
-            this.checkSpaceThrow();
-            this.checkBubbleEnemyCollision();
-            this.level.enemies.forEach(enemy => {
-                if (enemy instanceof Endboss) {
-                    enemy.checkBossIntro(this.character.x);
-                }
-            });
-        }
-    }, 200);
-}
+    /**
+     * Main game loop that checks for collisions and interactions
+     */
+    run() {
+        if (!this.gameIsRunning) return;
+        
+        setInterval(() => {
+            if (this.gameIsRunning) {
+                this.checkCollisions();
+                this.checkThrowObjects();
+                this.checkCharacterCoinCollision();
+                this.checkCharacterPoisonCollision();
+                this.checkSpaceThrow();
+                this.checkBubbleEnemyCollision();
+                this.level.enemies.forEach(enemy => {
+                    if (enemy instanceof Endboss) {
+                        enemy.checkBossIntro(this.character.x);
+                    }
+                });
+            }
+        }, 200);
+    }
 
     /**
      * Handles throwing of poison bubbles
@@ -97,31 +98,91 @@ run() {
         }
     }  
 
-     /**
+    /**
      * Handles throwing of normal bubbles
      */
     checkSpaceThrow() {
-        if (this.keyboard.SPACE && this.character.canThrow) {
-            this.character.canThrow = false; 
-            
-            this.character.startThrowAnimation(() => {
-                let bubbleX = this.character.otherDirection ? 
-                    this.character.x : 
-                    this.character.x + this.character.width;
-                
-                let bubbleY = this.character.y + this.character.height * 0.4;
-                
-                if (this.remainingPoisonBubbles > 0) {
-                    let bubble = new PoisonBubble(bubbleX, bubbleY, this.character.otherDirection);
-                    this.throwableObject.push(bubble);
-                    this.remainingPoisonBubbles--;
-                    this.poisonBar.poisonThrown();
-                } else {
-                    let bubble = new NormalBubble(bubbleX, bubbleY, this.character.otherDirection);
-                    this.throwableObject.push(bubble);
-                }
-            });
+        if (this.canThrowBubble()) {
+            this.initiateBubbleThrow();
         }
+    }
+
+    /**
+     * Checks if a bubble can be thrown
+     * @private
+     * @returns {boolean} True if bubble throw is possible
+     */
+    canThrowBubble() {
+        return this.keyboard.SPACE && this.character.canThrow;
+    }
+
+    /**
+     * Initiates the bubble throwing animation and creation
+     * @private
+     */
+    initiateBubbleThrow() {
+        this.character.canThrow = false;
+        this.character.startThrowAnimation(() => {
+            const bubblePosition = this.calculateBubblePosition();
+            this.createAndThrowBubble(bubblePosition);
+        });
+    }
+
+    /**
+     * Calculates the starting position for the bubble
+     * @private
+     * @returns {Object} x and y coordinates for the bubble
+     */
+    calculateBubblePosition() {
+        return {
+            x: this.character.otherDirection ? 
+                this.character.x : 
+                this.character.x + this.character.width,
+            y: this.character.y + this.character.height * 0.4
+        };
+    }
+
+    /**
+     * Creates and throws the appropriate bubble type
+     * @private
+     * @param {Object} position - The starting position for the bubble
+     */
+    createAndThrowBubble(position) {
+        if (this.remainingPoisonBubbles > 0) {
+            this.throwPoisonBubble(position);
+        } else {
+            this.throwNormalBubble(position);
+        }
+    }
+
+    /**
+     * Creates and throws a poison bubble
+     * @private
+     * @param {Object} position - The starting position for the bubble
+     */
+    throwPoisonBubble(position) {
+        let bubble = new PoisonBubble(
+            position.x, 
+            position.y, 
+            this.character.otherDirection
+        );
+        this.throwableObject.push(bubble);
+        this.remainingPoisonBubbles--;
+        this.poisonBar.poisonThrown();
+    }
+
+    /**
+     * Creates and throws a normal bubble
+     * @private
+     * @param {Object} position - The starting position for the bubble
+     */
+    throwNormalBubble(position) {
+        let bubble = new NormalBubble(
+            position.x, 
+            position.y, 
+            this.character.otherDirection
+        );
+        this.throwableObject.push(bubble);
     }
  
     /**
@@ -131,6 +192,9 @@ run() {
         this.level.enemies.forEach((enemy) => { 
             if (this.shouldHandleCollision(enemy)) {
                 this.handleCollision(enemy);
+            }
+            if (enemy instanceof Endboss && enemy.isDead()) {
+                enemy.die();
             }
         });
     }
@@ -242,87 +306,87 @@ run() {
             }
         });
     }
-    
-/**
- * Checks for collisions between bubbles and enemies
- */
-checkBubbleEnemyCollision() {
-    this.throwableObject.forEach((bubble, bubbleIndex) => {
-        this.level.enemies.forEach((enemy, enemyIndex) => {
-            if (bubble.hasSimpleCollisionWith(enemy)) {
-                if (bubble instanceof PoisonBubble) { 
-                    this.throwableObject.splice(bubbleIndex, 1);
-                    
-                    if (enemy instanceof Endboss) {
-                        enemy.hit();
-                    } else {
-                        this.startKnockbackAnimation(enemy);
-                    }
-                } else if (bubble instanceof NormalBubble && !(enemy instanceof Endboss)) {
-                    if (!bubble.enemyCaptured && !enemy.isTrappedInBubble) {
-                        bubble.captureEnemy(enemy);
+        
+    /**
+     * Checks for collisions between bubbles and enemies
+     */
+    checkBubbleEnemyCollision() {
+        this.throwableObject.forEach((bubble, bubbleIndex) => {
+            this.level.enemies.forEach((enemy, enemyIndex) => {
+                if (bubble.hasSimpleCollisionWith(enemy)) {
+                    if (bubble instanceof PoisonBubble) { 
+                        this.throwableObject.splice(bubbleIndex, 1);
+                        
+                        if (enemy instanceof Endboss) {
+                            enemy.hit();
+                        } else {
+                            this.startKnockbackAnimation(enemy);
+                        }
+                    } else if (bubble instanceof NormalBubble && !(enemy instanceof Endboss)) {
+                        if (!bubble.enemyCaptured && !enemy.isTrappedInBubble) {
+                            bubble.captureEnemy(enemy);
+                        }
                     }
                 }
-            }
+            });
         });
-    });
-}
-
-/**
- * Starts knockback animation for hit enemies
- * @param {MovableObject} enemy - The enemy to knock back
- */
-startKnockbackAnimation(enemy) {
-    enemy.isKnockedBack = true;
-    let knockbackSpeedX = 15;  
-    let knockbackSpeedY = -15; 
-    let gravity = 0.5;
-    let rotation = 0;
-    
-    let knockbackInterval = setInterval(() => {
-        enemy.x += knockbackSpeedX;
-        enemy.y += knockbackSpeedY;
-        knockbackSpeedY += gravity; 
-        rotation += 8; 
-        enemy.rotation = rotation;
-        
-        if (enemy.x > this.level.level_end_x || enemy.y > this.canvas.height + 100) {
-            clearInterval(knockbackInterval);
-            this.level.enemies = this.level.enemies.filter(e => e !== enemy);
-        }
-    }, 1000 / 60);
-}
-
-/**
- * Draws all game objects on the canvas
- */
-draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    this.ctx.translate(this.camera_x, 0);
-    this.addObjectsToMap(this.level.backgroundObjects);
-    this.ctx.translate(-this.camera_x, 0);
-
-    if (this.gameIsRunning) { 
-
-        this.addToMap(this.statusBar);
-        this.addToMap(this.coinBar);
-        this.addToMap(this.poisonBar);
-        if (this.endbossStatusBar.visible) {
-            this.addToMap(this.endbossStatusBar);
-        }
-        this.cooldownDisplay.draw(this.ctx);
-        
-        this.ctx.translate(this.camera_x, 0);
-        this.addToMap(this.character);
-        this.addObjectsToMap(this.level.enemies);
-        this.addObjectsToMap(this.level.light);
-        this.addObjectsToMap(this.throwableObject);
-        this.ctx.translate(-this.camera_x, 0);
     }
 
-    requestAnimationFrame(() => this.draw());
-}
+    /**
+     * Starts knockback animation for hit enemies
+     * @param {MovableObject} enemy - The enemy to knock back
+     */
+    startKnockbackAnimation(enemy) {
+        enemy.isKnockedBack = true;
+        let knockbackSpeedX = 15;  
+        let knockbackSpeedY = -15; 
+        let gravity = 0.5;
+        let rotation = 0;
+        
+        let knockbackInterval = setInterval(() => {
+            enemy.x += knockbackSpeedX;
+            enemy.y += knockbackSpeedY;
+            knockbackSpeedY += gravity; 
+            rotation += 8; 
+            enemy.rotation = rotation;
+            
+            if (enemy.x > this.level.level_end_x || enemy.y > this.canvas.height + 100) {
+                clearInterval(knockbackInterval);
+                this.level.enemies = this.level.enemies.filter(e => e !== enemy);
+            }
+        }, 1000 / 60);
+    }
+
+    /**
+     * Draws all game objects on the canvas
+     */
+    draw() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.translate(this.camera_x, 0);
+        this.addObjectsToMap(this.level.backgroundObjects);
+        this.ctx.translate(-this.camera_x, 0);
+
+        if (this.gameIsRunning) { 
+
+            this.addToMap(this.statusBar);
+            this.addToMap(this.coinBar);
+            this.addToMap(this.poisonBar);
+            if (this.endbossStatusBar.visible) {
+                this.addToMap(this.endbossStatusBar);
+            }
+            this.cooldownDisplay.draw(this.ctx);
+            
+            this.ctx.translate(this.camera_x, 0);
+            this.addToMap(this.character);
+            this.addObjectsToMap(this.level.enemies);
+            this.addObjectsToMap(this.level.light);
+            this.addObjectsToMap(this.throwableObject);
+            this.ctx.translate(-this.camera_x, 0);
+        }
+
+        requestAnimationFrame(() => this.draw());
+    }
 
     /**
      * Adds multiple objects to the game map

@@ -127,9 +127,11 @@ function adjustGameCanvas() {
 /**
  * Starts the game and initializes the game world
  */
-function startGame() {
+async function startGame() {
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('canvas').style.display = 'block';
+
+    await showCanvasLoading();
     
     AudioManager.init();
     if (!AudioManager.muted) {
@@ -139,6 +141,27 @@ function startGame() {
     if (!world) {
         world = new World(canvas, keyboard);
     }
+    world.startGame();
+    gameStarted = true;
+    
+    if (isMobile()) {
+        document.querySelector('.mobile-controls').style.display = 'flex';
+    }
+}
+
+/**
+ * Restarts the game directly without showing the start screen.
+ * Creates a new world instance and initializes the game state.
+ * Shows mobile controls if on a mobile device.
+ * 
+ * @async
+ * @function restartGameWithoutStartScreen
+ * @returns {Promise<void>} A promise that resolves when the game has restarted
+ */
+async function restartGameWithoutStartScreen() {
+    await showCanvasLoading();
+    
+    world = new World(canvas, keyboard);
     world.startGame();
     gameStarted = true;
     
@@ -342,7 +365,6 @@ function hideImpressum() {
     document.body.style.overflow = 'auto'; // Erlaubt wieder Scrollen
 }
 
-// Schließen des Modals wenn außerhalb geklickt wird
 window.onclick = function(event) {
     let modal = document.getElementById('impressum-modal');
     if (event.target == modal) {

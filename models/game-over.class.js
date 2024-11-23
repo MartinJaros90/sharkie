@@ -146,12 +146,12 @@ class GameOver {
         this.canvas.removeEventListener('touchstart', handleTouch);
         this.canvas.removeEventListener('touchend', handleTouch);
         document.removeEventListener('keydown', handleKeydown);
-    
+        
         if (isMobile()) {
             document.querySelector('.mobile-controls').style.display = 'flex';
         }
-        
-        location.reload();
+    
+        restartGameWithoutStartScreen();
     }
     
     /**

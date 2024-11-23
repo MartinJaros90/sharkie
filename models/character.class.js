@@ -174,14 +174,14 @@ class Character extends MovableObject {
         }, 1000 / 60);
     }
 
-    /**
-     * Checks if movement should be skipped
-     * @private
-     * @returns {boolean} True if movement should be skipped
-     */
-    shouldSkipMovement() {
-        return !this.world?.keyboard || this.isStunned || this.isDead();
-    }
+        /**
+         * Checks if movement should be skipped
+         * @private
+         * @returns {boolean} True if movement should be skipped
+         */
+        shouldSkipMovement() {
+            return !this.world?.keyboard || this.isStunned || this.isDead();
+        }
 
     /**
      * Handles all movement directions
@@ -189,6 +189,31 @@ class Character extends MovableObject {
      * @returns {boolean} True if character is moving
      */
     handleMovement() {
+        let isMoving = this.checkAndApplyMovement();
+        this.playMovementSound(isMoving); 
+        return isMoving;
+    }
+
+    /**
+     * Checks and applies movement in all directions
+     * @private
+     * @returns {boolean} True if character moved in any direction
+     */
+    checkAndApplyMovement() {
+        let isMoving = false;
+        
+        isMoving = this.handleHorizontalMovement() || isMoving;
+        isMoving = this.handleVerticalMovement() || isMoving;
+        
+        return isMoving;
+    }
+
+    /**
+     * Handles horizontal (left/right) movement
+     * @private
+     * @returns {boolean} True if moving horizontally
+     */
+    handleHorizontalMovement() {
         let isMoving = false;
 
         if (this.canMoveRight()) {
@@ -203,6 +228,17 @@ class Character extends MovableObject {
             isMoving = true;
         }
 
+        return isMoving;
+    }
+
+    /**
+     * Handles vertical (up/down) movement
+     * @private
+     * @returns {boolean} True if moving vertically
+     */
+    handleVerticalMovement() {
+        let isMoving = false;
+
         if (this.world.keyboard.UP) {
             this.moveUp();
             isMoving = true;
@@ -213,11 +249,18 @@ class Character extends MovableObject {
             isMoving = true;
         }
 
+        return isMoving;
+    }
+
+    /**
+     * Plays swimming sound if character is moving
+     * @private
+     * @param {boolean} isMoving - Whether the character is currently moving
+     */
+    playMovementSound(isMoving) {
         if (isMoving) {
             AudioManager.play('swimming');
         }
-
-        return isMoving;
     }
 
     /**
@@ -513,26 +556,60 @@ class Character extends MovableObject {
      * Displays and manages the slap cooldown timer
      */
     startSlapCooldownDisplay() {
-        let remainingCooldown = 3; 
-        
-        this.cooldownDisplay = `${remainingCooldown}...`;
+        let remainingCooldown = 3;
+        this.updateCooldownDisplay(remainingCooldown);
+        this.startCooldownTimer(remainingCooldown);
+    }
+
+    /**
+     * Updates the cooldown display text
+     * @private
+     * @param {number} remainingTime - Remaining cooldown time in seconds
+     */
+    updateCooldownDisplay(remainingTime) {
+        this.cooldownDisplay = remainingTime > 0 ? `${remainingTime}...` : 'SLAP!';
+    }
+
+    /**
+     * Starts the cooldown timer interval
+     * @private
+     * @param {number} startTime - Initial cooldown time in seconds
+     */
+    startCooldownTimer(startTime) {
+        let remainingCooldown = startTime;
         
         let cooldownInterval = setInterval(() => {
             remainingCooldown--;
             
             if (remainingCooldown > 0) {
-                this.cooldownDisplay = `${remainingCooldown}...`;
-            } else if (remainingCooldown === 0) {
-                this.cooldownDisplay = 'SLAP!';
-                
-                setTimeout(() => {
-                    this.cooldownDisplay = '';
-                    this.canSlap = true;
-                }, 1000);
-                
-                clearInterval(cooldownInterval);
+                this.updateCooldownDisplay(remainingCooldown);
+            } else {
+                this.handleCooldownComplete(cooldownInterval);
             }
         }, 1000);
+    }
+
+    /**
+     * Handles completion of the cooldown timer
+     * @private
+     * @param {number} intervalId - The interval to clear
+     */
+    handleCooldownComplete(intervalId) {
+        this.updateCooldownDisplay(0);
+        clearInterval(intervalId);
+        
+        setTimeout(() => {
+            this.resetSlapCooldown();
+        }, 1000);
+    }
+
+    /**
+     * Resets the slap cooldown state
+     * @private
+     */
+    resetSlapCooldown() {
+        this.cooldownDisplay = '';
+        this.canSlap = true;
     }
 
     /**

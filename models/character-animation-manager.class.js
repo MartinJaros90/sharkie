@@ -43,7 +43,6 @@ class CharacterAnimationManager {
 
     /**
      * Plays the death animation sequence and shows game over screen
-     * after completion
      */
     playDeathAnimation() {
         let currentFrame = 0;
@@ -52,22 +51,50 @@ class CharacterAnimationManager {
         let animationDuration = 2000; 
         
         let deathInterval = setInterval(() => {
-            let currentTime = Date.now();
-            let elapsed = currentTime - startTime;
-            let progress = Math.min(elapsed / animationDuration, 1);
+            let progress = this.calculateAnimationProgress(startTime, animationDuration);
+            currentFrame = this.updateDeathFrame(progress, frameCount);
             
-            currentFrame = Math.min(Math.floor(progress * frameCount), frameCount - 1);
-            this.character.img = this.character.imageCache[this.character.IMAGES_DEAD[currentFrame]];
             if (progress >= 1) {
-                clearInterval(deathInterval);
-                this.character.deathAnimationComplete = true;
-                
-                setTimeout(() => {
-                    this.character.showGameOverScreen();
-                }, 2000);
+                this.handleDeathAnimationComplete(deathInterval);
             }
         }, 1000 / 30);
     }
+
+    /**
+     * Calculates the current progress of the death animation
+     * @param {number} startTime - Animation start timestamp
+     * @param {number} duration - Total animation duration
+     * @returns {number} Animation progress between 0 and 1
+     */
+    calculateAnimationProgress(startTime, duration) {
+        let elapsed = Date.now() - startTime;
+        return Math.min(elapsed / duration, 1);
+    }
+
+    /**
+     * Updates the current death animation frame
+     * @param {number} progress - Current animation progress
+     * @param {number} frameCount - Total number of frames
+     * @returns {number} Current frame index
+     */
+    updateDeathFrame(progress, frameCount) {
+        let currentFrame = Math.min(Math.floor(progress * frameCount), frameCount - 1);
+        this.character.img = this.character.imageCache[this.character.IMAGES_DEAD[currentFrame]];
+        return currentFrame;
+    }
+
+    /**
+     * Handles completion of death animation
+     * @param {number} intervalId - The interval to clear
+     */
+    handleDeathAnimationComplete(intervalId) {
+        clearInterval(intervalId);
+        this.character.deathAnimationComplete = true;
+        
+        setTimeout(() => {
+            this.character.showGameOverScreen();
+        }, 2000);
+}
 
     /**
      * Clears all idle-related animation intervals and timeouts
