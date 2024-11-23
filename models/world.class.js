@@ -308,30 +308,75 @@ class World {
             }
         });
     }
-        
+    
     /**
      * Checks for collisions between bubbles and enemies
      */
     checkBubbleEnemyCollision() {
         this.throwableObject.forEach((bubble, bubbleIndex) => {
-            this.level.enemies.forEach((enemy, enemyIndex) => {
-                if (bubble.hasSimpleCollisionWith(enemy)) {
-                    if (bubble instanceof PoisonBubble) { 
-                        this.throwableObject.splice(bubbleIndex, 1);
-                        
-                        if (enemy instanceof Endboss) {
-                            enemy.hit();
-                        } else {
-                            this.startKnockbackAnimation(enemy);
-                        }
-                    } else if (bubble instanceof NormalBubble && !(enemy instanceof Endboss)) {
-                        if (!bubble.enemyCaptured && !enemy.isTrappedInBubble) {
-                            bubble.captureEnemy(enemy);
-                        }
-                    }
-                }
-            });
+            this.handleBubbleCollision(bubble, bubbleIndex);
         });
+    }
+
+    /**
+     * Handles collision detection and effects for a single bubble
+     * @private
+     * @param {Bubble} bubble - The bubble to check
+     * @param {number} bubbleIndex - Index of the bubble in throwableObject array
+     */
+    handleBubbleCollision(bubble, bubbleIndex) {
+        let hitRegistered = false;
+        
+        for (let enemy of this.level.enemies) {
+            if (!hitRegistered && bubble.hasSimpleCollisionWith(enemy)) {
+                hitRegistered = true;
+                this.processBubbleHit(bubble, enemy, bubbleIndex);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Processes the effects of a bubble hitting an enemy
+     * @private
+     * @param {Bubble} bubble - The bubble that hit
+     * @param {Enemy} enemy - The enemy that was hit
+     * @param {number} bubbleIndex - Index of the bubble to remove if needed
+     */
+    processBubbleHit(bubble, enemy, bubbleIndex) {
+        if (bubble instanceof PoisonBubble) {
+            this.handlePoisonBubbleHit(enemy, bubbleIndex);
+        } else {
+            this.handleNormalBubbleHit(bubble, enemy);
+        }
+    }
+
+    /**
+     * Handles poison bubble hit effects
+     * @private
+     * @param {Enemy} enemy - The enemy that was hit
+     * @param {number} bubbleIndex - Index of the bubble to remove
+     */
+    handlePoisonBubbleHit(enemy, bubbleIndex) {
+        this.throwableObject.splice(bubbleIndex, 1);
+        
+        if (enemy instanceof Endboss) {
+            enemy.hit();
+        } else {
+            this.startKnockbackAnimation(enemy);
+        }
+    }
+
+    /**
+     * Handles normal bubble capture effects
+     * @private
+     * @param {NormalBubble} bubble - The normal bubble
+     * @param {Enemy} enemy - The enemy to capture
+     */
+    handleNormalBubbleHit(bubble, enemy) {
+        if (!(enemy instanceof Endboss) && !bubble.enemyCaptured && !enemy.isTrappedInBubble) {
+            bubble.captureEnemy(enemy);
+        }
     }
 
     /**
