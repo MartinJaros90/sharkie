@@ -497,9 +497,13 @@ class Character extends MovableObject {
     checkSlapHit(slapHitRegistered) {
         if (this.isInSlapHitFrames() && !slapHitRegistered) {
             this.world.level.enemies.forEach(enemy => {
-                if (this.canHitEnemy(enemy, slapHitRegistered)) {
-                    slapHitRegistered = true;
+                if (this.canHitEnemy(enemy) && !enemy.isHit) { 
+                    enemy.isHit = true; 
                     this.handleEnemyHit(enemy);
+                    
+                    setTimeout(() => {
+                        enemy.isHit = false;
+                    }, 500);
                 }
             });
         }

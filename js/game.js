@@ -159,11 +159,17 @@ async function startGame() {
  * @returns {Promise<void>} A promise that resolves when the game has restarted
  */
 async function restartGameWithoutStartScreen() {
+    AudioManager.stopAll();  
+    
     await showCanvasLoading();
     
     world = new World(canvas, keyboard);
     world.startGame();
     gameStarted = true;
+    
+    if (!AudioManager.muted) {
+        AudioManager.startBackgroundMusic();  
+    }
     
     if (isMobile()) {
         document.querySelector('.mobile-controls').style.display = 'flex';

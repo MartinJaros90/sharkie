@@ -19,14 +19,8 @@ class Endboss extends MovableObject{
     visible = false;
     energy = 100;
     maxHits = 4;
-
-    movementPause = false;
-    pauseDuration = 2000;  
-    verticalSpeed = 1.2;
-    lastDirectionChange = 0;
-    directionChangeInterval = 3000;  
-    verticalDirection = 1;  
-
+    animation;
+    isHit = false;
 
 
 
@@ -59,7 +53,7 @@ class Endboss extends MovableObject{
         'img/2.Enemy/3 Final Enemy/1.Introduce/10.png'
 
 
-    ];  //Videos von JUNUS "Jump animationen anzeigen"
+    ];
     IMAGES_HURT = [
         'img/2.Enemy/3 Final Enemy/Hurt/1.png',
         'img/2.Enemy/3 Final Enemy/Hurt/2.png',
@@ -89,14 +83,30 @@ class Endboss extends MovableObject{
      */
     constructor() {
         super();
+        this.x = 2500;
+        this.y = 30;
+        this.height = 300;
+        this.width = 380;
+        this.speed = 2;
+        this.energy = 100;
+        this.otherDirection = false;
+        
+        this.loadImage(this.IMAGES_SWIMM[0]); 
         this.loadImages(this.IMAGES_SWIMM);
         this.loadImages(this.IMAGES_INTRODUCE);
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
         this.loadImages(this.IMAGES_ATTACK);
-        this.x = 2400;
+        
+        this.animation = new EndbossAnimation(this);
         this.animate();
-        this.startAttackInterval();
+        this.startAttackInterval(); 
+        this.verticalSpeed = 1;
+        this.verticalDirection = 1;
+        this.lastDirectionChange = Date.now();
+        this.directionChangeInterval = 2000;
+        this.pauseDuration = 1000;
+        this.movementPause = false;
     }
 
     /**
@@ -104,8 +114,8 @@ class Endboss extends MovableObject{
      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context
      */
     draw(ctx) {
-        if (this.visible) { 
-            super.draw(ctx);
+        if (this.visible) {
+            super.draw(ctx); 
         }
     }
 
@@ -113,15 +123,17 @@ class Endboss extends MovableObject{
      * Handles all animation states of the boss
      */
      animate() {
-        let i = 0;
         setInterval(() => {
-            this.checkFirstContact();
-            this.handleAnimationStates(i);
-            this.updateMovement();
-            if (this.hadFirstContact && !this.introduceFinished) {
-                i++;
+            if (this.isDead()) {
+                return;
+            } else if (this.isHurt()) {
+                this.playAnimation(this.IMAGES_HURT);
+            } else if (this.isAttacking) {          
+                this.playAnimation(this.IMAGES_ATTACK); 
+            } else if (this.introduceFinished) {
+                this.playAnimation(this.IMAGES_SWIMM);
             }
-        }, 150);
+        }, 200);
     }
 
     /**
@@ -130,7 +142,13 @@ class Endboss extends MovableObject{
      */
     checkFirstContact() {
         if (this.world?.character?.x > 2000 && !this.hadFirstContact) {
-            this.initializeFirstContact();
+            this.hadFirstContact = true;
+            this.visible = true;
+            AudioManager.stopBackgroundMusic();
+            AudioManager.play('boss');
+            if (this.world.endbossStatusBar) {
+                this.world.endbossStatusBar.visible = true;
+            }
         }
     }
 
@@ -143,75 +161,8 @@ class Endboss extends MovableObject{
         this.visible = true;
         AudioManager.stopBackgroundMusic();
         AudioManager.play('boss');
-        this.world.endbossStatusBar.visible = true;
-    }
-
-    /**
-     * Handles different animation states based on boss condition
-     * @private
-     * @param {number} introCounter - Counter for intro animation
-     */
-    handleAnimationStates(introCounter) {
-        if (this.isDead()) {
-            this.handleDeathAnimation();
-        } else if (this.hadFirstContact && !this.introduceFinished) {
-            this.handleIntroAnimation(introCounter);
-        } else {
-            this.handleNormalAnimations();
-        }
-    }
-
-    /**
-     * Handles death animation sequence
-     * @private
-     */
-    handleDeathAnimation() {
-        if (!this.isDying) {
-            if (this.currentDeadImage < this.IMAGES_DEAD.length - 1) {
-                this.playAnimation(this.IMAGES_DEAD);
-                this.currentDeadImage++;
-            } else {
-                this.finishDeathAnimation();
-            }
-        }
-    }
-
-    /**
-     * Completes the death animation sequence
-     * @private
-     */
-    finishDeathAnimation() {
-        this.img = this.imageCache[this.IMAGES_DEAD[this.IMAGES_DEAD.length - 1]];
-        this.isDying = true;
-        this.startDeadFloating();
-    }
-
-    /**
-     * Handles intro animation sequence
-     * @private
-     * @param {number} counter - Animation frame counter
-     */
-    handleIntroAnimation(counter) {
-        this.playAnimation(this.IMAGES_INTRODUCE);
-        if (counter >= 9) {
-            this.introduceFinished = true;
-            this.startMoving();
-        }
-    }
-
-    /**
-     * Handles normal state animations
-     * @private
-     */
-    handleNormalAnimations() {
-        if (this.isHurt()) {
-            this.playAnimation(this.IMAGES_HURT);
-        } else if (this.isAttacking) {
-            this.playAnimation(this.IMAGES_ATTACK);
-        } else if (this.movementPause) {
-            this.img = this.imageCache[this.IMAGES_SWIMM[0]];
-        } else {
-            this.playAnimation(this.IMAGES_SWIMM);
+        if (this.world?.endbossStatusBar) {
+            this.world.endbossStatusBar.visible = true;
         }
     }
 
@@ -232,29 +183,9 @@ class Endboss extends MovableObject{
      */
     checkBossIntro(characterX) {
         if (characterX > 2000 && !this.hadFirstContact) {
-            this.hadFirstContact = true;
-            this.visible = true;
-            AudioManager.stopBackgroundMusic();
-            AudioManager.play('boss');
-            this.world.endbossStatusBar.visible = true; 
-            this.playIntroAnimation();
+            this.initializeFirstContact();
+            this.animation.playIntroAnimation();
         }
-    }
-    
-    /**
-     * Plays the boss introduction animation sequence
-     */
-    playIntroAnimation() {
-        this.currentImage = 0;
-        this.visible = true;
-        let introInterval = setInterval(() => {
-            this.playAnimation(this.IMAGES_INTRODUCE);
-            if (this.currentImage >= this.IMAGES_INTRODUCE.length) {
-                clearInterval(introInterval);
-                this.introduceFinished = true;
-                this.startMoving();
-            }
-        }, 200);
     }
 
     /**
@@ -278,8 +209,12 @@ class Endboss extends MovableObject{
      */
     moveHorizontally() {
         if (this.world?.character) {
-            if (this.x > this.world.character.x) {
-                this.x -= this.speed;
+            let distanceToPlayer = this.world.character.x - this.x;
+            let direction = Math.sign(distanceToPlayer);
+            
+            if (Math.abs(distanceToPlayer) > 100) {
+                this.x += this.speed * direction;
+                this.otherDirection = direction > 0; // Korrigierte Logik
             }
         }
     }
@@ -333,13 +268,18 @@ class Endboss extends MovableObject{
      */
     startAttackInterval() {
         setInterval(() => {
-            if (!this.isDead() && !this.isHurt() && !this.movementPause) {
-                let distanceToPlayer = Math.abs(this.x - this.world?.character?.x);
+            if (this.world && this.world.character && 
+                !this.isDead() && !this.isHurt() && 
+                this.introduceFinished && !this.movementPause) {
                 
-                if (distanceToPlayer < 300 && Math.random() < 0.3) {
-                    this.startComboAttack();
-                } else {
-                    this.attack();
+                let distanceToPlayer = Math.abs(this.x - this.world.character.x);
+                
+                if (distanceToPlayer < 300) {
+                    if (Math.random() < 0.3) { 
+                        this.startComboAttack();
+                    } else {
+                        this.attack();
+                    }
                 }
             }
         }, this.attackCooldown);
@@ -353,11 +293,11 @@ class Endboss extends MovableObject{
         
         this.comboAttackActive = true;
         this.speed *= 1.5; 
-        this.attack();
+        this.attack();  
         
         setTimeout(() => {
             if (!this.isDead() && !this.isHurt()) {
-                this.attack();
+                this.attack(); 
             }
     
             setTimeout(() => {
@@ -371,26 +311,21 @@ class Endboss extends MovableObject{
      * Performs a single attack
      */
     attack() {
-        if (this.movementPause || this.isAttacking) return;
+        if (this.isAttacking || this.movementPause) return;
         
         this.isAttacking = true;
-        
-        let attackDuration = this.comboAttackActive ? 600 : 1000;
+        this.speed *= 1.5; 
+        this.playAnimation(this.IMAGES_ATTACK);
         
         setTimeout(() => {
             this.isAttacking = false;
-        }, attackDuration);
+            this.speed /= 1.5;
+        }, 1000);
     }
 
-    /**
-     * Initiates floating animation after death
-     */
-    startDeadFloating() {
-        let time = 0;
-        this.deadFloatingInterval = setInterval(() => {
-            this.y = this.initialY + Math.sin(time) * this.floatingOffset;
-            time += this.floatingSpeed / 60; 
-        }, 1000 / 60);  
+    isHurt() {
+        let timeSinceHit = new Date().getTime() - this.lastHit;
+        return timeSinceHit < 500; 
     }
 
     /**
@@ -404,116 +339,30 @@ class Endboss extends MovableObject{
             this.energy = 0;
         }
         
-        this.world.endbossStatusBar.setPercentage(this.energy);
         this.lastHit = new Date().getTime();
+        this.playAnimation(this.IMAGES_HURT);
+        this.world.endbossStatusBar.setPercentage(this.energy);
     
         if (this.isDead()) {
-            this.startVictorySequence(); 
+            this.animation.startVictorySequence(); 
         }
     }
 
     /**
-     * Initiates victory sequence when boss is defeated
-     */
-    startVictorySequence() {
-        AudioManager.stopAll();
-        AudioManager.play('victory'); 
-        hideMobileControls();
-        
-        setTimeout(() => {
-            this.showVictoryScreen();
-        }, 2000);
-    }
-
-    showVictoryScreen() {
-        if (!this.world.victoryScreen) {
-            this.world.victoryScreen = new VictoryScreen(this.world);
-            this.world.victoryScreen.show();
-        }
-    }
-
-    playDeadAnimation() {
-        let currentDeadImage = 0;
-        let deadInterval = setInterval(() => {
-            if (currentDeadImage < this.IMAGES_DEAD.length) {
-                this.img = this.imageCache[this.IMAGES_DEAD[currentDeadImage]];
-                currentDeadImage++;
-            } else {
-                clearInterval(deadInterval);
-            }
-        }, 200);
-    }
-
-    /**
-     * Behandelt den Tod des Endbosses
+     * Handles the death sequence of the end boss
+     * Plays death animation and shows victory screen after delay
+     * Only executes if boss is not already dying and has valid animation and world references
      */
     die() {
-        if (!this.isDying) {
+        if (!this.isDying && this.animation && this.world) {
             this.isDying = true;
-            this.playDeadAnimation();
+            this.animation.playDeadAnimation();
             setTimeout(() => {
-                this.showVictoryScreen();
+                if (this.animation) {
+                    this.animation.showVictoryScreen();
+                }
             }, 1000);
         }
-    }
-    /**
-     * Initializes configuration for victory screen
-     * @private
-     * @returns {Object} Victory screen configuration
-     */
-    initializeVictoryConfig() {
-        return {
-            ctx: this.world.ctx,
-            canvas: this.world.canvas,
-            alpha: 0,
-            scale: 0.1,
-            time: 0,
-            victoryImage: this.createVictoryImage()
-        };
-    }
-
-    /**
-     * Creates and loads victory image
-     * @private
-     * @returns {HTMLImageElement} Victory image element
-     */
-    createVictoryImage() {
-        let victoryImage = new Image();
-        victoryImage.src = 'img/6.Botones/Tittles/You win/Recurso 19.png';
-        return victoryImage;
-    }
-
-    /**
-     * Loads and starts victory screen animation
-     * @private
-     * @param {Object} config - Victory screen configuration
-     */
-    loadAndAnimateVictoryScreen(config) {
-        config.victoryImage.onload = () => {
-            let animate = () => {
-                this.clearAndDrawBackground(config);
-                
-                if (this.isImageReady(config.victoryImage)) {
-                    this.drawVictoryImage(config);
-                    this.updateAnimationValues(config);
-                }
-                
-                requestAnimationFrame(animate);
-            };
-            animate();
-        };
-    }
-
-    /**
-     * Clears canvas and draws background
-     * @private
-     * @param {Object} config - Victory screen configuration
-     */
-    clearAndDrawBackground(config) {
-        let { ctx, canvas, alpha } = config;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = `rgba(0, 0, 50, ${Math.min(alpha * 0.5, 0.7)})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     /**
@@ -524,93 +373,6 @@ class Endboss extends MovableObject{
      */
     isImageReady(image) {
         return image.complete && image.naturalWidth !== 0;
-    }
-
-    /**
-     * Draws victory image and effects
-     * @private
-     * @param {Object} config - Victory screen configuration
-     */
-    drawVictoryImage(config) {
-        let { ctx, canvas, victoryImage, alpha, scale, time } = config;
-        let dimensions = this.calculateImageDimensions(config);
-        
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.drawImage(victoryImage, dimensions.x, dimensions.y, dimensions.width, dimensions.height);
-        
-        if (alpha >= 1) {
-            this.drawVictoryEffects(ctx, canvas, alpha, time);
-        } else {
-            this.drawVictoryEffects(ctx, canvas, alpha);
-        }
-        ctx.restore();
-    }
-
-    /**
-     * Calculates dimensions for victory image
-     * @private
-     * @param {Object} config - Victory screen configuration
-     * @returns {Object} Image dimensions and position
-     */
-    calculateImageDimensions(config) {
-        let { canvas, victoryImage, scale } = config;
-        let imgWidth = canvas.width * 0.6 * (scale >= 1 ? 1 : scale);
-        let imgHeight = (imgWidth * victoryImage.height) / victoryImage.width;
-        let x = (canvas.width - imgWidth) / 2;
-        let y = (canvas.height - imgHeight) / 2;
-        
-        return { width: imgWidth, height: imgHeight, x, y };
-    }
-
-    /**
-     * Updates animation values for next frame
-     * @private
-     * @param {Object} config - Victory screen configuration
-     */
-    updateAnimationValues(config) {
-        if (config.alpha < 1) {
-            config.alpha = Math.min(config.alpha + 0.01, 1);
-        }
-        if (config.scale < 1) {
-            config.scale = Math.min(config.scale + 0.02, 1);
-        }
-        config.time += 0.02;
-    }
-    
-    /**
-     * Draws victory screen effects
-     * @param {CanvasRenderingContext2D} ctx - The canvas context
-     * @param {HTMLCanvasElement} canvas - The canvas element
-     * @param {number} alpha - The opacity value
-     * @param {number} [time=0] - The animation time
-     */
-    drawVictoryEffects(ctx, canvas, alpha, time = 0) {
-        this.drawStars(ctx, canvas, alpha, time);
-        this.drawVictoryText(ctx, canvas, alpha);
-    }
-    
-    /**
-     * Draws animated stars effect
-     * @param {CanvasRenderingContext2D} ctx - The canvas context
-     * @param {HTMLCanvasElement} canvas - The canvas element
-     * @param {number} alpha - The opacity value
-     * @param {number} [time=0] - The animation time
-     */
-    drawStars(ctx, canvas, alpha, time = 0) {
-        for (let i = 0; i < 100; i++) {
-            let x = Math.random() * canvas.width;
-            let y = Math.random() * canvas.height;
-            let size = Math.random() * 2 + 1;
-            
-            let pulse = time ? Math.sin(time + i) * 0.3 + 0.7 : 1;
-            let flickerAlpha = alpha * pulse * (0.5 + Math.random() * 0.5);
-            
-            ctx.fillStyle = `rgba(255, 255, 255, ${flickerAlpha})`;
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fill();
-        }
     }
     
     /**

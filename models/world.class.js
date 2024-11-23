@@ -32,9 +32,11 @@ class World {
         this.character = new Character();
         this.level = new Level([], [], createBackground());
         this.setWorld();
-        this.victoryScreen = null;
+        this.victoryScreen = null;  // Wichtig: Initialisierung hier
+        this.endboss = new Endboss();
+        this.endboss.world = this;  // Wichtig: Referenz setzen
         AudioManager.init();
-        this.draw(); 
+        this.draw();
     }
 
     /**
@@ -123,7 +125,7 @@ class World {
     initiateBubbleThrow() {
         this.character.canThrow = false;
         this.character.startThrowAnimation(() => {
-            const bubblePosition = this.calculateBubblePosition();
+            let bubblePosition = this.calculateBubblePosition();
             this.createAndThrowBubble(bubblePosition);
         });
     }
@@ -392,9 +394,12 @@ class World {
      * Adds multiple objects to the game map
      * @param {Array<MovableObject>} objects - Array of objects to add
      */
-    addObjectsToMap(objects){
-        objects.forEach(o => {
-            this.addToMap(o);
+    addObjectsToMap(objects) {
+        objects.forEach(obj => {
+            if (obj instanceof Endboss) {
+              
+            }
+            this.addToMap(obj);
         });
     }
 
@@ -406,9 +411,9 @@ class World {
         if (mo.otherDirection) {
             this.flipImage(mo);
         }
-
+    
         mo.draw(this.ctx);
-
+    
         if (mo.otherDirection) {
             this.flipImageBack(mo);
         }
