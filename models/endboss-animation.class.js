@@ -81,12 +81,12 @@ class EndbossAnimation {
     /**
      * Initiates floating animation after death
      */
-        startDeadFloating() {
-            let time = 0;
-            this.deadFloatingInterval = setInterval(() => {
-                this.y = this.initialY + Math.sin(time) * this.floatingOffset;
-                time += this.floatingSpeed / 60; 
-            }, 1000 / 60);  
+    startDeadFloating() {
+        let time = 0;
+        this.deadFloatingInterval = setInterval(() => {
+            this.y = this.initialY + Math.sin(time) * this.floatingOffset;
+            time += this.floatingSpeed / 60; 
+        }, 1000 / 60);  
         }
 
     /**
@@ -94,11 +94,12 @@ class EndbossAnimation {
      */
     startVictorySequence() {
         if (!this.endboss?.world) return;
-        
         AudioManager.stopAll();
-        AudioManager.play('victory');
+        if (!this.victoryPlayed) {
+            AudioManager.play('victory');
+            this.victoryPlayed = true;
+        }
         hideMobileControls();
-        
         setTimeout(() => {
             this.showVictoryScreen();
         }, 2000);
@@ -111,7 +112,6 @@ class EndbossAnimation {
      */
     showVictoryScreen() {
         if (!this.endboss?.world) return;
-        
         if (!this.endboss.world.victoryScreen) {
             this.endboss.world.victoryScreen = new VictoryScreen(this.endboss.world);
             this.endboss.world.victoryScreen.show();
@@ -160,7 +160,6 @@ class EndbossAnimation {
             let x = Math.random() * canvas.width;
             let y = Math.random() * canvas.height;
             let size = Math.random() * 2 + 1;
-            
             let pulse = time ? Math.sin(time + i) * 0.3 + 0.7 : 1;
             let flickerAlpha = alpha * pulse * (0.5 + Math.random() * 0.5);
             

@@ -1,6 +1,6 @@
 class World {
 
-    character = new Character();
+    character = new CharacterCombat();
     canvasWidth = 720;  
     canvasHeight = 480;
     canvas;
@@ -29,12 +29,13 @@ class World {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
-        this.character = new Character();
+        this.character = new CharacterCombat();
         this.level = new Level([], [], createBackground());
         this.setWorld();
-        this.victoryScreen = null;  // Wichtig: Initialisierung hier
+        this.victoryScreen = null; 
         this.endboss = new Endboss();
-        this.endboss.world = this;  // Wichtig: Referenz setzen
+        this.endboss.world = this;  
+        this.bubbleManager = new BubbleManager(this);
         AudioManager.init();
         this.draw();
     }
@@ -70,121 +71,45 @@ class World {
      */
     run() {
         if (!this.gameIsRunning) return;
-        
+        this.startGameLoop();
+    }
+
+    /**
+     * Starts the main game loop interval
+     * @private
+     */
+    startGameLoop() {
         setInterval(() => {
             if (this.gameIsRunning) {
-                this.checkCollisions();
-                this.checkThrowObjects();
-                this.checkCharacterCoinCollision();
-                this.checkCharacterPoisonCollision();
-                this.checkSpaceThrow();
-                this.checkBubbleEnemyCollision();
-                this.level.enemies.forEach(enemy => {
-                    if (enemy instanceof Endboss) {
-                        enemy.checkBossIntro(this.character.x);
-                    }
-                });
+                this.executeGameCycle();
             }
         }, 200);
     }
 
     /**
-     * Handles throwing of poison bubbles
+     * Executes one cycle of the game loop
+     * @private
      */
-    checkThrowObjects() {
-        if (this.keyboard.P && this.collectedPoisons > 0) {
-            let poisonBubble = new PoisonBubble(this.character.x + 100, this.character.y + 100);
-            this.throwableObject.push(poisonBubble);
-            this.collectedPoisons--;
-            this.poisonBar.poisonThrown();
-        }
-    }  
-
-    /**
-     * Handles throwing of normal bubbles
-     */
-    checkSpaceThrow() {
-        if (this.canThrowBubble()) {
-            this.initiateBubbleThrow();
-        }
+    executeGameCycle() {
+        this.checkCollisions();
+        this.bubbleManager.checkThrowObjects(); 
+        this.checkCharacterCoinCollision();
+        this.checkCharacterPoisonCollision();
+        this.bubbleManager.checkSpaceThrow(); 
+        this.bubbleManager.checkBubbleEnemyCollision();
+        this.checkEndbossIntro();
     }
 
     /**
-     * Checks if a bubble can be thrown
-     * @private
-     * @returns {boolean} True if bubble throw is possible
-     */
-    canThrowBubble() {
-        return this.keyboard.SPACE && this.character.canThrow;
-    }
-
-    /**
-     * Initiates the bubble throwing animation and creation
+     * Checks if endboss should start intro animation
      * @private
      */
-    initiateBubbleThrow() {
-        this.character.canThrow = false;
-        this.character.startThrowAnimation(() => {
-            let bubblePosition = this.calculateBubblePosition();
-            this.createAndThrowBubble(bubblePosition);
+    checkEndbossIntro() {
+        this.level.enemies.forEach(enemy => {
+            if (enemy instanceof Endboss) {
+                enemy.checkBossIntro(this.character.x);
+            }
         });
-    }
-
-    /**
-     * Calculates the starting position for the bubble
-     * @private
-     * @returns {Object} x and y coordinates for the bubble
-     */
-    calculateBubblePosition() {
-        return {
-            x: this.character.otherDirection ? 
-                this.character.x : 
-                this.character.x + this.character.width,
-            y: this.character.y + this.character.height * 0.4
-        };
-    }
-
-    /**
-     * Creates and throws the appropriate bubble type
-     * @private
-     * @param {Object} position - The starting position for the bubble
-     */
-    createAndThrowBubble(position) {
-        if (this.remainingPoisonBubbles > 0) {
-            this.throwPoisonBubble(position);
-        } else {
-            this.throwNormalBubble(position);
-        }
-    }
-
-    /**
-     * Creates and throws a poison bubble
-     * @private
-     * @param {Object} position - The starting position for the bubble
-     */
-    throwPoisonBubble(position) {
-        let bubble = new PoisonBubble(
-            position.x, 
-            position.y, 
-            this.character.otherDirection
-        );
-        this.throwableObject.push(bubble);
-        this.remainingPoisonBubbles--;
-        this.poisonBar.poisonThrown();
-    }
-
-    /**
-     * Creates and throws a normal bubble
-     * @private
-     * @param {Object} position - The starting position for the bubble
-     */
-    throwNormalBubble(position) {
-        let bubble = new NormalBubble(
-            position.x, 
-            position.y, 
-            this.character.otherDirection
-        );
-        this.throwableObject.push(bubble);
     }
  
     /**
@@ -299,84 +224,12 @@ class World {
             if (!poison.isCollected && this.character.isColliding(poison)) {
                 poison.collect();
                 this.poisonBar.poisonCollected();
-                
                 this.collectedPoisons++;
                 this.remainingPoisonBubbles++;
-                
                 poison.isCollected = true;
                 AudioManager.play('poison'); 
             }
         });
-    }
-    
-    /**
-     * Checks for collisions between bubbles and enemies
-     */
-    checkBubbleEnemyCollision() {
-        this.throwableObject.forEach((bubble, bubbleIndex) => {
-            this.handleBubbleCollision(bubble, bubbleIndex);
-        });
-    }
-
-    /**
-     * Handles collision detection and effects for a single bubble
-     * @private
-     * @param {Bubble} bubble - The bubble to check
-     * @param {number} bubbleIndex - Index of the bubble in throwableObject array
-     */
-    handleBubbleCollision(bubble, bubbleIndex) {
-        let hitRegistered = false;
-        
-        for (let enemy of this.level.enemies) {
-            if (!hitRegistered && bubble.hasSimpleCollisionWith(enemy)) {
-                hitRegistered = true;
-                this.processBubbleHit(bubble, enemy, bubbleIndex);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Processes the effects of a bubble hitting an enemy
-     * @private
-     * @param {Bubble} bubble - The bubble that hit
-     * @param {Enemy} enemy - The enemy that was hit
-     * @param {number} bubbleIndex - Index of the bubble to remove if needed
-     */
-    processBubbleHit(bubble, enemy, bubbleIndex) {
-        if (bubble instanceof PoisonBubble) {
-            this.handlePoisonBubbleHit(enemy, bubbleIndex);
-        } else {
-            this.handleNormalBubbleHit(bubble, enemy);
-        }
-    }
-
-    /**
-     * Handles poison bubble hit effects
-     * @private
-     * @param {Enemy} enemy - The enemy that was hit
-     * @param {number} bubbleIndex - Index of the bubble to remove
-     */
-    handlePoisonBubbleHit(enemy, bubbleIndex) {
-        this.throwableObject.splice(bubbleIndex, 1);
-        
-        if (enemy instanceof Endboss) {
-            enemy.hit();
-        } else {
-            this.startKnockbackAnimation(enemy);
-        }
-    }
-
-    /**
-     * Handles normal bubble capture effects
-     * @private
-     * @param {NormalBubble} bubble - The normal bubble
-     * @param {Enemy} enemy - The enemy to capture
-     */
-    handleNormalBubbleHit(bubble, enemy) {
-        if (!(enemy instanceof Endboss) && !bubble.enemyCaptured && !enemy.isTrappedInBubble) {
-            bubble.captureEnemy(enemy);
-        }
     }
 
     /**
@@ -389,14 +242,12 @@ class World {
         let knockbackSpeedY = -15; 
         let gravity = 0.5;
         let rotation = 0;
-        
         let knockbackInterval = setInterval(() => {
             enemy.x += knockbackSpeedX;
             enemy.y += knockbackSpeedY;
             knockbackSpeedY += gravity; 
             rotation += 8; 
             enemy.rotation = rotation;
-            
             if (enemy.x > this.level.level_end_x || enemy.y > this.canvas.height + 100) {
                 clearInterval(knockbackInterval);
                 this.level.enemies = this.level.enemies.filter(e => e !== enemy);
@@ -408,31 +259,60 @@ class World {
      * Draws all game objects on the canvas
      */
     draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        this.ctx.translate(this.camera_x, 0);
-        this.addObjectsToMap(this.level.backgroundObjects);
-        this.ctx.translate(-this.camera_x, 0);
-
-        if (this.gameIsRunning) { 
-
-            this.addToMap(this.statusBar);
-            this.addToMap(this.coinBar);
-            this.addToMap(this.poisonBar);
-            if (this.endbossStatusBar.visible) {
-                this.addToMap(this.endbossStatusBar);
-            }
-            this.cooldownDisplay.draw(this.ctx);
-            
-            this.ctx.translate(this.camera_x, 0);
-            this.addToMap(this.character);
-            this.addObjectsToMap(this.level.enemies);
-            this.addObjectsToMap(this.level.light);
-            this.addObjectsToMap(this.throwableObject);
-            this.ctx.translate(-this.camera_x, 0);
+        this.clearCanvas();
+        this.drawBackground();
+        if (this.gameIsRunning) {
+            this.drawStatusBars();
+            this.drawGameObjects();
         }
 
         requestAnimationFrame(() => this.draw());
+    }
+
+    /**
+     * Clears the canvas for the next frame
+     * @private
+     */
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    /**
+     * Draws the background objects
+     * @private
+     */
+    drawBackground() {
+        this.ctx.translate(this.camera_x, 0);
+        this.addObjectsToMap(this.level.backgroundObjects);
+        this.ctx.translate(-this.camera_x, 0);
+    }
+
+    /**
+     * Draws all status bars and UI elements
+     * @private
+     */
+    drawStatusBars() {
+        this.addToMap(this.statusBar);
+        this.addToMap(this.coinBar);
+        this.addToMap(this.poisonBar);
+        if (this.endbossStatusBar.visible) {
+            this.addToMap(this.endbossStatusBar);
+        }
+        
+        this.cooldownDisplay.draw(this.ctx);
+    }
+
+    /**
+     * Draws all game objects with camera translation
+     * @private
+     */
+    drawGameObjects() {
+        this.ctx.translate(this.camera_x, 0);
+        this.addToMap(this.character);
+        this.addObjectsToMap(this.level.enemies);
+        this.addObjectsToMap(this.level.light);
+        this.addObjectsToMap(this.throwableObject);
+        this.ctx.translate(-this.camera_x, 0);
     }
 
     /**
@@ -442,7 +322,6 @@ class World {
     addObjectsToMap(objects) {
         objects.forEach(obj => {
             if (obj instanceof Endboss) {
-              
             }
             this.addToMap(obj);
         });
@@ -456,7 +335,6 @@ class World {
         if (mo.otherDirection) {
             this.flipImage(mo);
         }
-    
         mo.draw(this.ctx);
     
         if (mo.otherDirection) {
